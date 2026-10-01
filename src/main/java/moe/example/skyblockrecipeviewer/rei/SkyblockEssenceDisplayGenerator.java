@@ -11,7 +11,6 @@ import me.shedaniel.rei.api.common.entry.EntryStack;
 import moe.example.skyblockrecipeviewer.repo.NeuRepoManager;
 import moe.example.skyblockrecipeviewer.repo.essence.EssenceStore;
 import moe.example.skyblockrecipeviewer.repo.essence.EssenceUpgradeRecipe;
-import net.minecraft.world.item.ItemStack;
 
 /**
  * Live "recipe for X" / "usage of X" lookups for essence upgrades - see

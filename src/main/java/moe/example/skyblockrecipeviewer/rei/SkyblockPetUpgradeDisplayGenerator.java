@@ -12,7 +12,6 @@ import me.shedaniel.rei.api.common.entry.EntryStack;
 import moe.example.skyblockrecipeviewer.repo.NeuRepoManager;
 import moe.example.skyblockrecipeviewer.repo.PetAcquisitionStore;
 import moe.example.skyblockrecipeviewer.repo.SkyblockItemResolver;
-import net.minecraft.world.item.ItemStack;
 
 /**
  * Live "recipe for X" / "usage of X" lookups for Kat pet upgrades - see

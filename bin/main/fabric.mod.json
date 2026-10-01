@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "skyblockrecipeviewer",
+  "version": "1.0.3",
+  "name": "SkyBlock Recipe Viewer",
+  "description": "Downloads the public NotEnoughUpdates item repo and shows SkyBlock crafting recipes in REI. No auto-updater, no mod-list reporting.",
+  "authors": [],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "moe.example.skyblockrecipeviewer.SkyblockRecipeViewer"
+    ],
+    "rei_client": [
+      "moe.example.skyblockrecipeviewer.rei.SkyblockReiPlugin"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "fabric-api": "*",
+    "roughlyenoughitems": "*"
+  },
+  "mixins": [
+    "skyblockrecipeviewer.mixins.json"
+  ]
+}

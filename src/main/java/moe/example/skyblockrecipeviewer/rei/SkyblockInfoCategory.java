@@ -3,7 +3,6 @@ package moe.example.skyblockrecipeviewer.rei;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
-import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
@@ -13,10 +12,8 @@ import me.shedaniel.rei.api.common.util.EntryStacks;
 import moe.example.skyblockrecipeviewer.SkyblockRecipeViewer;
 import moe.example.skyblockrecipeviewer.repo.SkyblockWikiManager;
 import net.minecraft.util.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -64,7 +61,6 @@ public final class SkyblockInfoCategory implements DisplayCategory<SkyblockInfoD
 		Optional<String> wikiUrl = SkyblockWikiManager.getInstance().getWikiUrl(id);
 		if (wikiUrl.isEmpty()) return widgets;
 
-		LocalPlayer player = Minecraft.getInstance().player;
 		LinearLayout layout = LinearLayout.vertical();
 		layout.setPosition(bounds.x + OFFSET, bounds.y + OFFSET + REI_SLOT_HEIGHT);
 
