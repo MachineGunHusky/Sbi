@@ -39,6 +39,7 @@ public final class ItemCategoryResolver {
 		// pickaxes for reforge eligibility so every drill gets the same applicable
 		// reforges as an ordinary pickaxe.
 		if ("DRILL".equals(category)) return "PICKAXE";
+		if ("FISHING_ROD".equals(category)) return "ROD";
 		return category;
 	}
 }
