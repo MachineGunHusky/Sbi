@@ -57,26 +57,7 @@ public final class SkyblockItemEntryDefinition implements EntryDefinition<ItemSt
 	private static final String SKYBLOCK_ID_KEY = "SkyblockRecipeViewerId";
 	private static final SkyblockItemEntryDefinition INSTANCE = new SkyblockItemEntryDefinition();
 
-	/**
-	 * THE ACTUAL FIX for entries silently vanishing after the first REI reload of a session
-	 * (confirmed via rei-issues.log: every reload past the first failed with "Entry type
-	 * skyblockrecipeviewer:skyblock_item doesn't exist!", and the following "successful"
-	 * reload's own displays report listed zero entries from this mod at all).
-	 *
-	 * This used to be a `static { }` block instead of a method - which only ever runs ONCE
-	 * per classloader lifetime, the very first time this class is touched. But REI rebuilds
-	 * EntryTypeRegistry from scratch on every single reload (game launch, "Reload Plugins",
-	 * joining a world, etc - see the many rei.log entries of full "Reloading Section:" passes
-	 * throughout a session). So the first reload registered our type fine, but every
-	 * subsequent reload wiped REI's registry and had no way to know our type needed
-	 * re-registering, since the Java class was already loaded and its static initializer
-	 * was never going to run a second time. Calling this explicitly and unconditionally from
-	 * registerEntries() every single time (registerEntries() is itself one of REI's own
-	 * reload callbacks, so this now re-registers exactly once per actual reload, matching
-	 * EntryTypeRegistry's own real lifecycle instead of the JVM's).
-	 *
-	 * register() itself is a plain overwrite-the-map-entry call, safe to call repeatedly.
-	 */
+	/** Registers the entry type for the current REI reload. */
 	public static void registerType() {
 		EntryTypeRegistry.getInstance().register(TYPE_ID, INSTANCE);
 	}

@@ -149,12 +149,6 @@ public final class SkyblockNbtApplier {
 			// model/texture instead of the correct Hypixel resource-pack skin - even though
 			// the same repo data clearly has the right model id available. Read it straight
 			// off the parsed tag ourselves and set the component directly.
-			// NOTE FOR WHOEVER WIRES THIS UP: couldn't verify this Minecraft version's exact
-			// CompoundTag.getString(...) signature from here - some versions return a plain
-			// String (empty if absent), others return Optional<String>. Written for the
-			// Optional<String> form (matching the .orElse(null) below); if your IDE shows
-			// getString(String) returning a plain String instead, drop the .orElse(null) and
-			// just check it's non-blank.
 			if (capturedTag.contains("ItemModel")) {
 				String modelId = capturedTag.getString("ItemModel").orElse(null);
 				if (modelId != null && !modelId.isBlank()) {
@@ -231,18 +225,7 @@ public final class SkyblockNbtApplier {
 		return out.toString();
 	}
 
-	/**
-	 * NEU's repo item json stores the captured item NBT (old-style SNBT, e.g.
-	 * {@code {ExtraAttributes:{id:"..."},display:{Name:'...',Lore:[...]}}}) under the "nbttag"
-	 * key - this was a plain {@code NBTTagCompound nbttag} constructor argument in the original
-	 * 1.8.9 NEU mod's own item-json parsing code.
-	 *
-	 * NOTE FOR WHOEVER WIRES THIS UP: I could not verify neurepoparser's exact accessor name for
-	 * this field from here (no javadoc/source browsing available in this environment). Try
-	 * {@code neuItem.getNbttag()} first - if your IDE doesn't offer that, autocomplete on
-	 * {@code neuItem.} to find the real getter name and swap it in below. Nothing else in this
-	 * pipeline depends on how this one string gets fetched.
-	 */
+	/** Returns the item's captured NBT in legacy SNBT form. */
 	private static String extractNbtTag(NEUItem neuItem) {
 		return neuItem.getNbttag();
 	}

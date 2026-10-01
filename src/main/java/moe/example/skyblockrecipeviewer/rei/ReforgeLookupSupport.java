@@ -24,34 +24,13 @@ final class ReforgeLookupSupport {
 	}
 
 	/**
-	 * The five real per-item categories Hypixel's own item resource reports for these slots
-	 * (confirmed directly against it: Arachne's Belt -> "BELT", Arachne's Gloves -> "GLOVES",
-	 * Arachne's Cloak -> "CLOAK", Arachne's Necklace -> "NECKLACE", and Bracelets use
-	 * "BRACELET" the same way) - {@code reforgestones.json} uses "EQUIPMENT" as an umbrella
-	 * term meaning "any of these five", but since no real item's own category is ever literally
-	 * "EQUIPMENT", a plain exact-match lookup against {@link ReforgeStore#getByItemType} could
-	 * never find a single match for any of them. This is the confirmed bug behind "we don't
-	 * have reforges for items that are Equipment."
+ * Accessory categories covered by the "EQUIPMENT" umbrella in reforge data.
 	 */
 	private static final Set<String> EQUIPMENT_CATEGORIES =
 		Set.of("BELT", "GLOVES", "CLOAK", "NECKLACE", "BRACELET");
 
 	/**
-	 * Same umbrella-term problem as {@link #EQUIPMENT_CATEGORIES}, for armor: Hypixel reports
-	 * each armor piece's own specific category (confirmed: a helmet's category is "HELMET", a
-	 * chestplate's "CHESTPLATE", and so on for "LEGGINGS"/"BOOTS"), but most reforge-stone
-	 * reforges - e.g. Precursor Gear/Ancient, {@code "itemTypes": "ARMOR"}, confirmed directly
-	 * against the real repo file - use "ARMOR" as an umbrella meaning "any of these four", the
-	 * same way "EQUIPMENT" means "any of the five accessory slots".
-	 *
-	 * Without this expansion, a plain exact-match lookup only ever found reforges that happen
-	 * to name a specific slot directly (e.g. Red Scarf/Loving, which really is chestplate-only
-	 * by design - its own tooltip says "combined with a chestplate") - the generic ARMOR-wide
-	 * reforges that make up the bulk of reforgestones.json never matched any piece at all. This
-	 * exactly explains the reported symptom: helmet/chestplate showed the small number of
-	 * genuinely slot-specific reforges that exist for those two slots, while leggings/boots -
-	 * which have no slot-specific reforges of their own by game design - showed nothing,
-	 * because the many generic ARMOR reforges never got a chance to match either of them.
+ * Armor categories covered by the "ARMOR" umbrella in reforge data.
 	 */
 	private static final Set<String> ARMOR_CATEGORIES =
 		Set.of("HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS");
@@ -60,10 +39,8 @@ final class ReforgeLookupSupport {
 	 * Every reforge (both free and stone-based - callers filter by {@code reforgeStoneId()} for
 	 * their own category) that's eligible for {@code skyblockId}: the item itself IS a reforge
 	 * stone, the item is explicitly allow-listed by id (a unique-item-specific reforge), or the
-	 * item's own category matches one of the reforge's eligible item types - see
-	 * {@link ItemCategoryResolver}'s class docs for why that last one required its own fix to
-	 * work at all, and {@link #EQUIPMENT_CATEGORIES}'s / {@link #ARMOR_CATEGORIES}'s docs for
-	 * the umbrella-term ("EQUIPMENT"/"ARMOR") expansion fixes.
+ * item's own category matches one of the reforge's eligible item types, including umbrella
+ * categories expanded by {@link #EQUIPMENT_CATEGORIES} and {@link #ARMOR_CATEGORIES}.
 	 */
 	static Set<ReforgeData> matchesFor(NeuRepoManager manager, String skyblockId) {
 		ReforgeStore store = ReforgeStore.getInstance();

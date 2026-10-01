@@ -14,31 +14,8 @@ import net.minecraft.world.item.TooltipFlag;
 import moe.example.skyblockrecipeviewer.repo.SkyblockPriceManager;
 
 /**
- * Appends live Bazaar/Auction House price lines directly onto the tooltip's line list via
- * Fabric API's {@link ItemTooltipCallback} - the same universal, no-custom-Mixin-needed hook
- * Cosmic Pings uses for its own price tooltip (confirmed by decompiling its jar:
- * {@code SkyBlockTooltipAppender} mutates the tooltip Component list directly, not through any
- * REI-specific mechanism). This replaced an earlier design built on REI's own
- * {@code EntryStack.tooltipProcessor} - which, despite being confirmed at the bytecode level to
- * be genuinely consulted by REI's tooltip-building code, never actually produced a visible
- * result across several real test sessions with correctly-loaded price data, for reasons never
- * fully pinned down (quite possibly related to the reload-thrashing/cancellation issues seen
- * repeatedly in rei-issues.log throughout this investigation). Fabric API's callback is a
- * lower-level, universally-fired hook that doesn't depend on any of REI's own internal
- * indexing/caching behavior, so it can't be affected by whatever that turned out to be.
- *
- * <b>Scoping</b> ("only our own REI list, never real inventory items" - the reason this feature
- * exists in this form at all, see the conversation this was built from): done purely by
- * checking {@link SkyblockItemEntryDefinition#getSkyblockId(ItemStack)}, which reads back
- * {@code tagWithSkyblockId}'s own dedicated marker key ({@code "SkyblockRecipeViewerId"},
- * stamped onto every stack {@code SkyblockItemResolver.resolveItemStack} produces) - NOT the
- * real ExtraAttributes/CustomData.id every genuine Hypixel-sent item also carries. A real
- * inventory item can never have our marker, so this is reliable regardless of what screen
- * happens to be open. (An earlier version of this class instead checked whether REI's own
- * screen class was open - which turned out to be both unreliable, since REI's search panel is
- * drawn as an overlay on top of the existing vanilla inventory screen rather than as a
- * separate screen class, and unnecessary, since the marker check below already does the job
- * on its own.)
+ * Adds live Bazaar and Auction House prices to tooltips for this mod's REI item stacks.
+ * The stack marker keeps price lines scoped to those entries.
  */
 public final class SkyblockPriceTooltipHandler {
 	private SkyblockPriceTooltipHandler() {
@@ -48,17 +25,6 @@ public final class SkyblockPriceTooltipHandler {
 		ItemTooltipCallback.EVENT.register(SkyblockPriceTooltipHandler::onTooltip);
 	}
 
-	/**
-	 * NOTE FOR WHOEVER BUILDS THIS: couldn't verify this MC version's exact
-	 * ItemTooltipCallback.getTooltip(...) parameter list from here - Fabric API's own published
-	 * docs show it evolving across versions (a 4th "TooltipType" parameter was added around
-	 * 1.21, and some versions drop the Item.TooltipContext parameter entirely). Written to match
-	 * ItemStack.getTooltipLines's own confirmed real signature for this exact MC version
-	 * (Item.TooltipContext + TooltipFlag, not TooltipType) - if your IDE reports a
-	 * @Override/functional-interface mismatch, adjust this method's parameter list to match
-	 * whatever ItemTooltipCallback actually declares; the body below doesn't use the context/
-	 * flag parameters at all, so it's a type-only fix, not a logic change.
-	 */
 	private static void onTooltip(ItemStack stack, Item.TooltipContext context, TooltipFlag flag,
 			List<Component> lines) {
 		String skyblockId = SkyblockItemEntryDefinition.getSkyblockId(stack);

@@ -23,32 +23,14 @@ import io.github.moulberry.repo.NEURepository;
 import io.github.moulberry.repo.data.NEUItem;
 
 /**
- * Reads NPC shop purchase data directly from each item's own raw repo JSON file, rather than
- * through neurepoparser's typed recipe model - confirmed (by decompiling CosmicPings, a
- * different, working NEU-repo-backed mod, since this project has no local copy of
- * neurepoparser's own source/jar to check directly) that neurepoparser has no typed class for
- * "npc_shop"-type recipe entries the way it does for "crafting"/"forge"/"drops" (which this
- * project already consumes via NEUCraftingRecipe/NEUForgeRecipe/NEUMobDropRecipe - see
- * NeuRepoManager). The raw JSON shape (confirmed against that same decompile): an item's own
- * "recipes" array can contain an entry with {@code "type": "npc_shop"}, a {@code "cost"} array
- * of ingredient-slot strings ({@code "ITEM_ID:COUNT"}, the same format NEUIngredient uses
- * elsewhere in this repo, with {@code "SKYBLOCK_COIN"} as the item id for a pure coin cost),
- * and a {@code "result"} slot string for what buying it actually gives you.
+ * Reads NPC shop purchases from each item's raw repo JSON. Entries contain a cost array of
+ * {@code "ITEM_ID:COUNT"} strings and a result string.
  *
- * NOTE: NEU repo data does not attach a specific merchant identity to an npc_shop entry at
- * all (confirmed the same way - CosmicPings' own parsing falls back to the *selling item's
- * own* internalname/displayname where a real NPC name might be expected, since there isn't
- * one in the raw data). So this feature can only show "buyable from an NPC shop for X", not
- * which specific NPC/location sells it.
+ * NPC shop entries do not identify the merchant, so displays can show the cost but not the
+ * specific NPC or location.
  *
- * Reading and parsing one JSON file per known item (thousands of files) is real, non-trivial
- * disk I/O - unlike getCraftingRecipes()/getMobDropRecipes()/etc, which are just filtering
- * already-in-memory objects NEURepository parsed once at load time. Given the earlier,
- * previously-fixed freeze bug in this project (see SkyblockReiPlugin's own history/docs on
- * tryLivePush()) was caused by exactly this class of mistake - real work run synchronously
- * where a lookup was expected to be instant - this index is built once per repo load, on its
- * own background thread, and cached; getEntries() below only ever returns whatever's already
- * cached (empty on a cold, not-yet-built cache) and never blocks waiting for a build.
+ * The index is built and cached on a background thread once per repo load. {@code getEntries()}
+ * returns the current cache without waiting for a build.
  */
 public final class NpcShopIndex {
 	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(r -> {

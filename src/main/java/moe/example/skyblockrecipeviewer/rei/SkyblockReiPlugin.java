@@ -237,25 +237,8 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 	 * newer than what was last pushed. Safe to call from anywhere, any number of times - the
 	 * lastLivePushedRepo guard makes repeat/redundant calls a cheap no-op.
 	 *
-	 * This is the piece that was missing for straight multiplayer joins: a Hypixel-join
-	 * download (see NeuRepoManager.checkForUpdatesOnJoin / HypixelSkinManager.
-	 * refreshFromNetwork) updates the underlying data directly, but neither of those know
-	 * anything about REI - without an explicit call to this afterward, nothing tells REI new
-	 * data exists until some unrelated event happens to trigger a full plugin reload (e.g.
-	 * loading into a singleplayer world), which is exactly the "works after singleplayer,
-	 * not on straight multiplayer" symptom this fixes.
-	 *
-	 * CRASH HISTORY: this used to fire the instant our own repo/skin data was ready, which on
-	 * a join where everything was already cached (e.g. another mod like SkyHanni had already
-	 * loaded the repo) could be within ~2 seconds of joining - faster than REI's own
-	 * asynchronous first reload of *its* plugins. That let this reach
-	 * SkyblockItemEntryDefinition (and, through it, VanillaEntryTypes.ITEM.getDefinition())
-	 * before REI's DefaultPlugin had registered "minecraft:item" at all, throwing a
-	 * NullPointerException out of a static initializer - which is unrecoverable for the rest
-	 * of the session (a failed <clinit> permanently poisons the class) and crashed the whole
-	 * client. Waiting on reiPluginsRegistered (set from registerCategories(), which REI only
-	 * ever calls after its own entry types exist) closes that race at the source, instead of
-	 * just guessing at a "should be long enough" delay.
+	 * Waits until REI has registered its entry types before pushing data, so item entries can
+	 * be resolved safely.
 	 */
 	public static void tryLivePush() {
 		net.minecraft.client.Minecraft.getInstance().execute(SkyblockReiPlugin::tryLivePushOnClient);

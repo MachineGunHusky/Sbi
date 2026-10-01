@@ -157,21 +157,6 @@ public class SkyblockReforgeStoneCategory implements DisplayCategory<SkyblockRef
 
 		@Override
 		public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
-			// NOTE FOR WHOEVER BUILDS THIS: couldn't verify KeyEvent's exact accessor for the
-			// raw GLFW key code from here - no local Minecraft jar available to decompile
-			// against for this specific (very new) input-event refactor, which wraps key
-			// codes in a KeyEvent object instead of passing a raw int like older MC versions
-			// did. Written assuming a record-style event.key() accessor; if your IDE disagrees,
-			// autocomplete on `event.` to find the real one (could be .keyCode(), .getKey(),
-			// .key, etc.) and swap it in below. The GLFW key codes themselves (262 = right
-			// arrow, 263 = left arrow) are stable regardless of that.
-			//
-			// Also worth testing: Minecraft/REI screens typically route keyPressed only to
-			// whichever child widget currently has UI *focus* (usually set by clicking it
-			// first), not simply whichever one the mouse happens to be hovering. If arrow keys
-			// don't do anything while just hovering (no click), that's why - the fix would be
-			// having containsMouse-based hover also call setFocused on this widget/its parent,
-			// or checking how other REI mods implement hover-only key handling.
 			if (rarities.size() > 1 && containsMouse(Widget.mouse())) {
 				int key = event.key();
 				if (key == 262) { // GLFW_KEY_RIGHT

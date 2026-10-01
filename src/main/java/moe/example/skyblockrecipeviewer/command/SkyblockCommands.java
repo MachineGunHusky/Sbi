@@ -20,10 +20,7 @@ import moe.example.skyblockrecipeviewer.repo.SkyblockItemRenameManager;
 import moe.example.skyblockrecipeviewer.repo.SkyblockPriceManager;
 
 /**
- * Single owner of every client command this mod registers, all under one shared "/sbi"
- * prefix. Each feature gets its own subcommand rather than a separate root - only where two
- * variants of the *same* feature exist (Bazaar vs Auction House refresh) do they become an
- * option under one subcommand, rather than two entirely separate ones.
+ * Registers the mod's client commands under the "/sbi" prefix.
  *
  * Commands:
  * <ul>
@@ -34,20 +31,7 @@ import moe.example.skyblockrecipeviewer.repo.SkyblockPriceManager;
  *   <li>{@code /sbi refresh bazaar} / {@code /sbi refresh ah} - reloads just one</li>
  * </ul>
  *
- * ClientCommands - not ClientCommandManager, which is what every earlier attempt at this
- * file used and which is why compilation kept failing with "cannot find symbol". Confirmed
- * directly against Fabric's own current docs.fabricmc.net "Creating Commands 26.2" page
- * (matching this exact MC version): "Fabric API provides the
- * ClientCommandRegistrationCallback event ... that can be used to register client-side
- * commands, replacing the vanilla Commands class with the equivalent ClientCommands." The
- * package (net.fabricmc.fabric.api.client.command.v2) was correct the whole time - only this
- * one class's name had actually changed for this MC version. ClientCommands provides the
- * same literal()/argument() static helpers vanilla's own server-side Commands class does,
- * just for the client-side dispatcher.
- *
- * NOTE: ClientCommandRegistrationCallback's exact registration signature (dispatcher + a
- * second "registry access" parameter) is stable, unchanged API confirmed directly against
- * Fabric's own current docs.fabricmc.net "Creating Commands 26.2" page.
+ * {@link ClientCommands} provides the client-side command builders used by the dispatcher.
  */
 public final class SkyblockCommands {
 	private SkyblockCommands() {
