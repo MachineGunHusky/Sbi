@@ -9,7 +9,7 @@ import me.shedaniel.rei.api.client.view.ViewSearchBuilder;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import io.github.moulberry.repo.NEURepository;
-import io.github.moulberry.repo.data.NEUItem;
+import io.github.moulberry.repo.data.NEUIngredient;
 import moe.example.skyblockrecipeviewer.repo.NeuRepoManager;
 import moe.example.skyblockrecipeviewer.repo.NpcShopIndex;
 import moe.example.skyblockrecipeviewer.repo.PetAcquisitionStore;
@@ -110,17 +110,15 @@ public final class SkyblockNpcShopDisplayGenerator implements DynamicDisplayGene
 				coinCost += slot.count();
 				continue;
 			}
-			NEUItem costItem = repository.getItems().getItemBySkyblockId(slot.itemId());
-			ItemStack costStack = SkyblockItemResolver.resolveItemStack(costItem, slot.itemId());
+			ItemStack costStack = SkyblockItemResolver.resolve(repository,
+				NEUIngredient.fromString(slot.itemId() + ":" + slot.count()));
 			if (costStack.isEmpty()) continue;
-			costStack.setCount(Math.max(1, Math.min(slot.count(), costStack.getMaxStackSize())));
 			inputs.add(EntryIngredient.of(EntryStack.of(SkyblockItemEntryDefinition.TYPE, costStack)));
 		}
 
-		NEUItem outputItem = repository.getItems().getItemBySkyblockId(shopEntry.resultItemId());
-		ItemStack outputStack = SkyblockItemResolver.resolveItemStack(outputItem, shopEntry.resultItemId());
+		ItemStack outputStack = SkyblockItemResolver.resolve(repository,
+			NEUIngredient.fromString(shopEntry.resultItemId() + ":" + shopEntry.resultCount()));
 		if (outputStack.isEmpty()) return null;
-		outputStack.setCount(Math.max(1, Math.min(shopEntry.resultCount(), outputStack.getMaxStackSize())));
 		List<EntryIngredient> outputs = List.of(EntryIngredient.of(EntryStack.of(SkyblockItemEntryDefinition.TYPE, outputStack)));
 
 		return new SkyblockNpcShopDisplay(inputs, outputs, coinCost);
