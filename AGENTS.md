@@ -3,4 +3,5 @@
 - Before implementing a complex solution, pause and ask: "Is there a more elegant, simpler solution available?" Prefer reusing vanilla/engine behavior (simulating input, a small targeted mixin) over re-implementing whole subsystems in parallel. If a single-line redirect or a keybind toggle achieves the same outcome as a 50+ line custom pipeline, use the small one. Complexity must be justified by a concrete need, not by defensive design for hypothetical edge cases
 - Never use the U+2014 character anywhere - in code, comments, chat messages, HUD text, documentation, or commit messages. Always use a regular hyphen (-) instead.
 - After making changes to config/data files, verify that ALL live copies (including any generated/compressed copies) are also updated. Do not assume editing the source file is sufficient.
-- After every set of code changes, run ./gradlew build and report the result before handing back. Don't stop at compileJava - the user wants the jar ready to test.
+After every set of code changes, run ./gradlew build then report the result before handing back. Do not stop at compileJava - the user wants the jar ready to test.
+After running ./gradlew build push the build jar file to C:\Users\mambr\AppData\Roaming\PrismLauncher\instances\Testing
