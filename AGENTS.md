@@ -4,4 +4,4 @@
 - Never use the U+2014 character anywhere - in code, comments, chat messages, HUD text, documentation, or commit messages. Always use a regular hyphen (-) instead.
 - After making changes to config/data files, verify that ALL live copies (including any generated/compressed copies) are also updated. Do not assume editing the source file is sufficient.
 After every set of code changes, run ./gradlew build then report the result before handing back. Do not stop at compileJava - the user wants the jar ready to test.
-After running ./gradlew build push the build jar file to C:\Users\mambr\AppData\Roaming\PrismLauncher\instances\Testing
+After running ./gradlew build push the build jar file to C:\Users\mambr\AppData\Roaming\PrismLauncher\instances\Testing\minecraft\mods

@@ -134,6 +134,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		registry.add(new SkyblockReforgeStoneCategory());
 		registry.add(new SkyblockForgeCategory());
 		registry.add(new SkyblockEssenceCategory());
+		registry.add(new SkyblockItemUpgradeCategory());
 		registry.add(new SkyblockPetUpgradeCategory());
 		registry.add(new SkyblockMobDropCategory());
 		registry.add(new SkyblockNpcShopCategory());
@@ -456,6 +457,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		registry.registerDisplayGenerator(SkyblockReforgeStoneCategory.ID, SkyblockReforgeStoneDisplayGenerator.INSTANCE);
 		registry.registerDisplayGenerator(SkyblockForgeCategory.ID, SkyblockForgeDisplayGenerator.INSTANCE);
 		registry.registerDisplayGenerator(SkyblockEssenceCategory.ID, SkyblockEssenceDisplayGenerator.INSTANCE);
+		registry.registerDisplayGenerator(SkyblockItemUpgradeCategory.ID, SkyblockItemUpgradeDisplayGenerator.INSTANCE);
 		registry.registerDisplayGenerator(SkyblockPetUpgradeCategory.ID, SkyblockPetUpgradeDisplayGenerator.INSTANCE);
 		registry.registerDisplayGenerator(SkyblockMobDropCategory.ID, SkyblockMobDropDisplayGenerator.INSTANCE);
 		registry.registerDisplayGenerator(SkyblockNpcShopCategory.ID, SkyblockNpcShopDisplayGenerator.INSTANCE);
