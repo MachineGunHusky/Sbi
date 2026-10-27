@@ -1,4 +1,4 @@
-# Skyblock Recipe Viewer (SBI) | Fabric MC 26.2
+# SkyBlockItems (SBI) | Fabric MC 26.2
 This is not a re-creation of Firmament just some of its features without snitching the users mods list
 
 # AI Disclosure
@@ -9,23 +9,24 @@ This project was created entirely by AI by MGHusky
 - Fabric Loader 0.19.3+
 - FabricAPI
 
-# Build versions
+# Version history
 
-`mod_version` in `gradle.properties` is the release version, using `MAJOR.MINOR.PATCH`:
+Changes published on the main branch (`master`). Local test builds are not listed.
 
-- Bug fixes increment PATCH: `1.0.5` to `1.0.6`.
-- Feature additions increment MINOR and reset PATCH: `1.0.5` to `1.1.0`.
-- Minecraft version changes increment MAJOR and reset MINOR and PATCH: `1.3.5` to `2.0.0`.
+## 1.1.0 - 27 October 2026
 
-Each component can grow beyond 9: `1.0.9` becomes `1.0.10`, without carrying into MINOR.
-For a set of changes, apply the highest applicable bump once. Rebuilding the same changes
-does not require another version bump.
+- Added crafting recipe costs for insta-buy and buy orders, and standardised version information. [Main-branch update](https://github.com/MachineGunHusky/Sbi/commit/2db7a31)
+- Stopped tracking generated build and editor files. [Main-branch update](https://github.com/MachineGunHusky/Sbi/commit/af8f9da)
 
-Every build appends its short Git commit hash, for example `1.0.3+7574977`. Local builds
-with uncommitted source or build input changes add `.dirty`. Generated files do not
-trigger this marker. Builds from a source archive without Git metadata use `+unknown`.
-The full version appears in the jar filename, the mod metadata, the startup log, and
-`/sbi version`.
+## 1.0.3 - 8 September to 22 October 2026
+
+These earlier main-branch updates shared version 1.0.3.
+
+- Improved Auction House and Bazaar pricing. [Auction House update](https://github.com/MachineGunHusky/Sbi/commit/7574977), [Bazaar update](https://github.com/MachineGunHusky/Sbi/commit/d2b88b8)
+- Added the item-upgrades GUI for consumable upgrades. [Main-branch update](https://github.com/MachineGunHusky/Sbi/commit/a2729a0)
+- Improved NPC shop costs and essence upgrade menus. [Main-branch update](https://github.com/MachineGunHusky/Sbi/commit/cfea0cf)
+- Fixed Forge recipe refresh and fishing rod reforges. [Forge fix](https://github.com/MachineGunHusky/Sbi/commit/fdde72c), [reforge fix](https://github.com/MachineGunHusky/Sbi/commit/e6d798a)
+- Added asynchronous REI startup loading. [Main-branch update](https://github.com/MachineGunHusky/Sbi/commit/3765fe6)
 
 # Credits
 - MGHusky - The person who originally created this project
