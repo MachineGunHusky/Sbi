@@ -13,6 +13,15 @@ This project was created entirely by AI by MGHusky
 
 Changes published on the main branch (`master`). Local test builds are not listed.
 
+## 1.1.9 - 27 October 2026
+
+- Renamed the visible mod name and jar to SkyBlockItems, preserving internal IDs and save locations.
+- Updated Auction House prices to Coflnet's bulk lowest-BIN endpoint.
+- Added dedicated NEU repository storage with automatic setup, recovery and brief chat status messages.
+- Expanded dungeon loot with missing chest sources and verified S+ with max bonuses chances, while retaining existing NEU drops.
+- Separated Normal and Master Mode pages, with individual Obsidian and Bedrock cards showing level I books.
+- Reduced REI loading stalls by preventing duplicate item loading, budgeting cache decoding and moving cache serialization off the render thread.
+
 ## 1.1.0 - 27 October 2026
 
 - Added crafting recipe costs for insta-buy and buy orders, and standardised version information. [Main-branch update](https://github.com/MachineGunHusky/Sbi/commit/2db7a31)

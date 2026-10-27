@@ -45,7 +45,7 @@ public final class SkyblockCommands {
 				.then(ClientCommands.literal("version")
 					.executes(context -> {
 						context.getSource().sendFeedback(Component.literal(
-							"[SkyBlock Recipe Viewer] Version: " + SkyblockRecipeViewer.VERSION)
+							"[SkyBlockItems] Version: " + SkyblockRecipeViewer.VERSION)
 							.withStyle(ChatFormatting.GRAY));
 						return 1;
 					}))
@@ -77,12 +77,12 @@ public final class SkyblockCommands {
 		String uuid = SkyblockItemRealNbt.getUuid(held);
 		if (uuid == null) {
 			source.sendFeedback(Component.literal(
-				"[SkyBlock Recipe Viewer] The item in your hand doesn't have a SkyBlock item "
+				"[SkyBlockItems] The item in your hand doesn't have a SkyBlock item "
 					+ "UUID to attach a rename to.").withStyle(ChatFormatting.RED));
 			return;
 		}
 		SkyblockItemRenameManager.getInstance().setName(uuid, name);
-		source.sendFeedback(Component.literal("[SkyBlock Recipe Viewer] Renamed to: ")
+		source.sendFeedback(Component.literal("[SkyBlockItems] Renamed to: ")
 			.withStyle(ChatFormatting.GRAY)
 			.append(Component.literal(name)));
 	}
@@ -92,13 +92,13 @@ public final class SkyblockCommands {
 		String uuid = SkyblockItemRealNbt.getUuid(held);
 		if (uuid == null) {
 			source.sendFeedback(Component.literal(
-				"[SkyBlock Recipe Viewer] The item in your hand doesn't have a SkyBlock item UUID.")
+				"[SkyBlockItems] The item in your hand doesn't have a SkyBlock item UUID.")
 				.withStyle(ChatFormatting.RED));
 			return;
 		}
 		SkyblockItemRenameManager.getInstance().clearName(uuid);
 		source.sendFeedback(Component.literal(
-			"[SkyBlock Recipe Viewer] Cleared custom name - restored to its original name.")
+			"[SkyBlockItems] Cleared custom name - restored to its original name.")
 			.withStyle(ChatFormatting.GRAY));
 	}
 
@@ -117,7 +117,7 @@ public final class SkyblockCommands {
 		String what = auction && bazaar ? "Auction House and Bazaar"
 			: auction ? "Auction House"
 			: "Bazaar";
-		source.sendFeedback(Component.literal("[SkyBlock Recipe Viewer] Reloading " + what + " prices...")
+		source.sendFeedback(Component.literal("[SkyBlockItems] Reloading " + what + " prices...")
 			.withStyle(ChatFormatting.GRAY));
 
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -126,7 +126,7 @@ public final class SkyblockCommands {
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
 			.thenRun(() -> Minecraft.getInstance().execute(() ->
-				source.sendFeedback(Component.literal("[SkyBlock Recipe Viewer] Price reload complete.")
+				source.sendFeedback(Component.literal("[SkyBlockItems] Price reload complete.")
 					.withStyle(ChatFormatting.GREEN))));
 
 		return 1;

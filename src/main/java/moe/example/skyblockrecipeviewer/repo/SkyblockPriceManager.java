@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -18,12 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -33,12 +28,12 @@ import java.util.concurrent.TimeUnit;
  * (see SkyblockReiPlugin.withPriceTooltip), never real inventory items (Skyblocker, if
  * installed, already covers those with its own, more detailed tooltip).
  *
- * Bazaar is bulk-refreshed. Auction House BIN prices are fetched on demand in the background,
- * one item at a time, and kept in a local cache.
+ * Both markets are bulk-refreshed on the same background executor. Tooltip lookups only
+ * read the most recent immutable cache snapshot.
  *
  * Two refinements added after the very first cold launch caused a noticeable freeze (both
  * bulk fetches landing at the same moment as the very first heavy 8000+ item reload):
- *  1. Auction requests are spaced out to stay below Coflnet's public API rate limits.
+ *  1. Auction refreshes are staggered from Bazaar refreshes on the same five-minute cadence.
  *  2. Each market is cached to disk and loaded synchronously
  *     - fast, no network - at construction time, so a fresh launch has *something* (possibly a
  *     few minutes stale) to show immediately, rather than every tooltip showing nothing until
@@ -50,18 +45,15 @@ import java.util.concurrent.TimeUnit;
  *    book, "buy_summary" is actually the SELL OFFER book (swapped from what the names suggest).
  *    The highest sell_summary price is what a player receives instantly selling; the lowest
  *    buy_summary price is what a player pays instantly buying.
- *  - Auction House: Coflnet's per-item {@code /api/item/price/{itemTag}/bin} endpoint returns
- *    the current lowest BIN for that item type. The NEU price map is a clean/reference price,
- *    not a guaranteed live BIN.
+ *  - Auction House: Coflnet's public {@code /api/prices/neu} endpoint supplies a numeric
+ *    price map keyed by NEU item ID. No token or item ID conversion is needed.
  */
 public final class SkyblockPriceManager {
 	private static final Logger LOGGER = LogManager.getLogger("SkyblockRecipeViewer/Price");
 
 	private static final String BAZAAR_URL = "https://api.hypixel.net/v2/skyblock/bazaar";
-	private static final String COFLNET_LOWEST_BIN_URL = "https://sky.coflnet.com/api/item/price/";
+	private static final String COFLNET_NEU_PRICES_URL = "https://sky.coflnet.com/api/prices/neu";
 	private static final long REFRESH_INTERVAL_MINUTES = 5;
-	private static final long AUCTION_PRICE_TTL_MILLIS = TimeUnit.MINUTES.toMillis(5);
-	private static final long AUCTION_REQUEST_INTERVAL_MILLIS = 1200;
 	private static final long MAX_PRICE_RESPONSE_BYTES = 32L * 1024 * 1024;
 
 	private static final Path BAZAAR_CACHE_FILE = FabricLoader.getInstance().getGameDir()
@@ -91,11 +83,22 @@ public final class SkyblockPriceManager {
 
 	private volatile Map<String, BazaarPrice> bazaarPrices = Map.of();
 	private volatile Map<String, CachedAuctionPrice> auctionLowestBin = Map.of();
-	private final Map<String, CompletableFuture<Void>> pendingAuctionRequests = new ConcurrentHashMap<>();
-	private final Set<String> requestedAuctionIds = ConcurrentHashMap.newKeySet();
-	private long nextAuctionRequestAt;
 
-	private record CachedAuctionPrice(double price, long fetchedAt) {
+	record CachedAuctionPrice(double price, long fetchedAt) {
+		static Map<String, CachedAuctionPrice> readBulkResponse(String body, long fetchedAt) {
+			JsonObject prices = JsonParser.parseString(body).getAsJsonObject();
+			Map<String, CachedAuctionPrice> loaded = new HashMap<>();
+			for (String itemId : prices.keySet()) {
+				JsonElement value = prices.get(itemId);
+				if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) continue;
+				double price = value.getAsDouble();
+				if (Double.isFinite(price) && price >= 0) {
+					loaded.put(itemId, new CachedAuctionPrice(price, fetchedAt));
+				}
+			}
+			if (loaded.isEmpty()) throw new IllegalArgumentException("Auction House response contains no valid prices");
+			return Map.copyOf(loaded);
+		}
 	}
 
 	private SkyblockPriceManager() {
@@ -103,6 +106,8 @@ public final class SkyblockPriceManager {
 		loadAuctionCacheFromDisk();
 
 		scheduler.scheduleWithFixedDelay(this::refreshBazaarSafely, 0, REFRESH_INTERVAL_MINUTES, TimeUnit.MINUTES);
+		scheduler.scheduleWithFixedDelay(this::refreshAuctionSafely,
+			Math.max(1, REFRESH_INTERVAL_MINUTES / 2), REFRESH_INTERVAL_MINUTES, TimeUnit.MINUTES);
 	}
 
 	public Optional<BazaarPrice> getBazaarPrice(String skyblockId) {
@@ -121,25 +126,17 @@ public final class SkyblockPriceManager {
 		return java.util.concurrent.CompletableFuture.runAsync(this::refreshBazaarSafely, scheduler);
 	}
 
-	/** Refreshes Auction House BIN prices that have been looked up during this session. */
+	/** Refreshes the complete Auction House price snapshot on the existing background executor. */
 	public java.util.concurrent.CompletableFuture<Void> reloadAuctionAsync() {
-		Set<String> requestedIds = new java.util.HashSet<>(requestedAuctionIds);
-		requestedIds.addAll(pendingAuctionRequests.keySet());
-		List<CompletableFuture<Void>> refreshes = requestedIds.stream()
-			.map(id -> requestAuctionBin(id, true)).toList();
-		return CompletableFuture.allOf(refreshes.toArray(CompletableFuture[]::new));
+		return java.util.concurrent.CompletableFuture.runAsync(this::refreshAuctionSafely, scheduler);
 	}
 
 	/**
-	 * Returns the cached lowest BIN and schedules a background refresh when the value is stale.
+	 * Looks up the NEU item ID directly in the most recent Auction House cache snapshot.
 	 */
 	public Optional<Double> getAuctionLowestBin(String skyblockId) {
 		if (skyblockId == null) return Optional.empty();
-		requestedAuctionIds.add(skyblockId);
 		CachedAuctionPrice cached = auctionLowestBin.get(skyblockId);
-		if (cached == null || System.currentTimeMillis() - cached.fetchedAt() >= AUCTION_PRICE_TTL_MILLIS) {
-			requestAuctionBin(skyblockId, false);
-		}
 		return cached == null || cached.price() <= 0 ? Optional.empty() : Optional.of(cached.price());
 	}
 
@@ -241,80 +238,27 @@ public final class SkyblockPriceManager {
 		}
 	}
 
-	private CompletableFuture<Void> requestAuctionBin(String skyblockId, boolean force) {
-		CompletableFuture<Void> existing = pendingAuctionRequests.get(skyblockId);
-		if (existing != null) return existing;
-		CachedAuctionPrice cached = auctionLowestBin.get(skyblockId);
-		if (!force && cached != null && System.currentTimeMillis() - cached.fetchedAt() < AUCTION_PRICE_TTL_MILLIS) {
-			return CompletableFuture.completedFuture(null);
+	private void refreshAuctionSafely() {
+		try {
+			refreshAuctionLowestBins();
+		} catch (Exception e) {
+			LOGGER.warn("Failed to refresh Auction House lowest-BIN prices: {}", e.toString());
 		}
-
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		if (pendingAuctionRequests.putIfAbsent(skyblockId, future) != null) {
-			return pendingAuctionRequests.get(skyblockId);
-		}
-
-		long delay;
-		synchronized (this) {
-			long now = System.currentTimeMillis();
-			delay = Math.max(0, nextAuctionRequestAt - now);
-			nextAuctionRequestAt = now + delay + AUCTION_REQUEST_INTERVAL_MILLIS;
-		}
-		scheduler.schedule(() -> {
-			try {
-				fetchAuctionLowestBin(skyblockId);
-				future.complete(null);
-			} catch (Exception e) {
-				LOGGER.warn("Failed to refresh Auction House lowest-BIN price for {}: {}", skyblockId, e.toString());
-				future.complete(null);
-			} finally {
-				pendingAuctionRequests.remove(skyblockId, future);
-			}
-		}, delay, TimeUnit.MILLISECONDS);
-		return future;
 	}
 
-	private void fetchAuctionLowestBin(String skyblockId) throws Exception {
-		String itemTag = skyblockId;
-		String filter = "";
-		if (skyblockId.startsWith("PET_") && skyblockId.contains(";")) {
-			int separator = skyblockId.lastIndexOf(';');
-			try {
-				int rarity = Integer.parseInt(skyblockId.substring(separator + 1));
-				String[] tiers = {"COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"};
-				if (rarity >= 0 && rarity < tiers.length) {
-					itemTag = skyblockId.substring(0, separator);
-					filter = "?Tier=" + tiers[rarity];
-				}
-			} catch (NumberFormatException ignored) {
-			}
-		} else if (skyblockId.contains(";") && !skyblockId.startsWith("ATTRIBUTE_SHARD_")) {
-			int separator = skyblockId.lastIndexOf(';');
-			String level = skyblockId.substring(separator + 1);
-			if (level.chars().allMatch(Character::isDigit)) {
-				String enchantment = skyblockId.substring(0, separator);
-				if (enchantment.startsWith("ENCHANTMENT_")) enchantment = enchantment.substring("ENCHANTMENT_".length());
-				itemTag = "ENCHANTMENT_" + enchantment + "_" + level;
-			}
-		}
-		String pathId = URLEncoder.encode(itemTag, StandardCharsets.UTF_8).replace("+", "%20");
-		URI uri = URI.create(COFLNET_LOWEST_BIN_URL + pathId + "/bin" + filter);
-		HttpRequest request = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(15)).GET().build();
+	private void refreshAuctionLowestBins() throws Exception {
+		HttpRequest request = HttpRequest.newBuilder(URI.create(COFLNET_NEU_PRICES_URL))
+			.timeout(Duration.ofSeconds(15)).GET().build();
 		HttpResponse<String> response = http.send(request,
 			HttpResponse.BodyHandlers.limiting(HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8), MAX_PRICE_RESPONSE_BYTES));
 		if (response.statusCode() != 200) {
-			LOGGER.warn("Coflnet lowest-BIN endpoint returned HTTP {} for {}", response.statusCode(), skyblockId);
+			LOGGER.warn("Coflnet bulk price endpoint returned HTTP {}", response.statusCode());
 			return;
 		}
-		JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
-		if (!body.has("cost") || !body.get("cost").isJsonPrimitive()) {
-			LOGGER.warn("Coflnet lowest-BIN response had no cost for {}", skyblockId);
-			return;
-		}
-		double price = body.get("cost").getAsDouble();
-		Map<String, CachedAuctionPrice> refreshed = new HashMap<>(auctionLowestBin);
-		refreshed.put(skyblockId, new CachedAuctionPrice(Math.max(0, price), System.currentTimeMillis()));
-		auctionLowestBin = Map.copyOf(refreshed);
+		Map<String, CachedAuctionPrice> refreshed = CachedAuctionPrice.readBulkResponse(
+			response.body(), System.currentTimeMillis());
+		auctionLowestBin = refreshed;
+		LOGGER.info("Refreshed {} Auction House prices from Coflnet.", refreshed.size());
 		writeAuctionCacheToDisk();
 	}
 

@@ -18,7 +18,9 @@ import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
+import me.shedaniel.rei.impl.client.gui.widget.ScrollableViewWidget;
 import moe.example.skyblockrecipeviewer.SkyblockRecipeViewer;
+import moe.example.skyblockrecipeviewer.repo.DungeonRewards;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -66,6 +68,7 @@ public class SkyblockMobDropCategory implements DisplayCategory<SkyblockMobDropD
 
 	@Override
 	public int getDisplayWidth(SkyblockMobDropDisplay display) {
+		if (DungeonRewards.floor(display.getRecipe()) != null) return 163;
 		int drops = display.getOutputEntries().size();
 		int columns = Math.max(1, Math.min(drops, 6));
 		return Math.max(90, 55 + columns * 18);
@@ -73,11 +76,19 @@ public class SkyblockMobDropCategory implements DisplayCategory<SkyblockMobDropD
 
 	@Override
 	public int getDisplayHeight() {
-		return 90;
+		return 220;
+	}
+
+	@Override
+	public int getMaximumDisplaysPerPage() {
+		return 1;
 	}
 
 	@Override
 	public List<Widget> setupDisplay(SkyblockMobDropDisplay display, Rectangle bounds) {
+		DungeonRewards.Floor floor = DungeonRewards.floor(display.getRecipe());
+		if (floor != null) return setupDungeonDisplay(display, bounds, floor);
+		bounds = new Rectangle(bounds.getX(), bounds.getY(), bounds.getWidth(), 90);
 		List<Widget> widgets = new ArrayList<>();
 		widgets.add(Widgets.createRecipeBase(bounds));
 
@@ -96,14 +107,8 @@ public class SkyblockMobDropCategory implements DisplayCategory<SkyblockMobDropD
 		int y = bounds.getY() + 22;
 		int maxX = bounds.getMaxX() - 20;
 		List<EntryIngredient> outputs = display.getOutputEntries();
-		List<String> chances = display.getDropChances();
 		for (int i = 0; i < outputs.size(); i++) {
-			EntryIngredient drop = outputs.get(i);
-			String chance = i < chances.size() ? chances.get(i) : null;
-
-			Slot slot = Widgets.createSlot(new Point(x, y)).markOutput();
-			slot.entries(drop);
-			widgets.add(chance != null ? new DropChanceSlot(slot, dropStackOf(drop), chance) : slot);
+			addDrop(widgets, display, i, x, y);
 
 			x += 18;
 			if (x > maxX) {
@@ -113,6 +118,56 @@ public class SkyblockMobDropCategory implements DisplayCategory<SkyblockMobDropD
 		}
 
 		return widgets;
+	}
+
+	private static List<Widget> setupDungeonDisplay(SkyblockMobDropDisplay display, Rectangle bounds,
+			DungeonRewards.Floor floor) {
+		List<Widget> widgets = new ArrayList<>();
+		widgets.add(Widgets.createLabel(new Point(bounds.getX() + 4, bounds.getY() + 2),
+			Component.literal("Floor " + floor.number() + " - " + (floor.master() ? "Master" : "Normal"))
+				.withStyle(ChatFormatting.DARK_GRAY)).leftAligned());
+		int y = bounds.getY() + 14;
+		int columns = Math.max(1, (bounds.getWidth() - 36) / 18);
+		List<String> groups = new ArrayList<>(List.of("Obsidian Chest", "Bedrock Chest"));
+		for (String chest : DungeonRewards.CHESTS) {
+			if (!groups.contains(chest)) groups.add(chest);
+		}
+		groups.add(DungeonRewards.UNSPECIFIED_CHEST);
+		for (String chest : groups) {
+			List<Integer> indices = new ArrayList<>();
+			for (int i = 0; i < display.getOutputEntries().size(); i++) {
+				if (chest.equals(DungeonRewards.chest(display.getDropExtras().get(i)))) indices.add(i);
+			}
+			if (indices.isEmpty()) continue;
+			int rows = (indices.size() + columns - 1) / columns;
+			int height = Math.max(90, 30 + rows * 18);
+			Rectangle card = new Rectangle(bounds.getX(), y, bounds.getWidth(), height);
+			widgets.add(Widgets.createRecipeBase(card));
+			Slot icon = Widgets.createSlot(new Point(card.getX() + 6, card.getY() + 6));
+			icon.entries(EntryIngredient.of(EntryStack.of(VanillaEntryTypes.ITEM, new ItemStack(Items.DIAMOND_SWORD))));
+			icon.disableBackground();
+			widgets.add(Widgets.withTooltip(icon, buildMobTooltip(display.getRecipe())));
+			String title = chest.equals(DungeonRewards.UNSPECIFIED_CHEST) ? "Other Floor Drops" : chest;
+			widgets.add(Widgets.createLabel(new Point(card.getX() + 28, card.getY() + 8),
+				Component.literal(title).withStyle(ChatFormatting.RED)).leftAligned());
+			for (int i = 0; i < indices.size(); i++) {
+				addDrop(widgets, display, indices.get(i), card.getX() + 28 + (i % columns) * 18,
+					card.getY() + 22 + (i / columns) * 18);
+			}
+			y += height + 8;
+		}
+		int contentHeight = y - bounds.getY() - 8;
+		if (contentHeight <= bounds.getHeight()) return widgets;
+		Rectangle content = new Rectangle(bounds.getX(), bounds.getY(), bounds.getWidth(), contentHeight);
+		Rectangle viewport = new Rectangle(bounds.getX() - 2, bounds.getY(), bounds.getWidth() + 8, bounds.getHeight());
+		return List.of(ScrollableViewWidget.create(viewport, Widgets.concatWithBounds(content, widgets), false));
+	}
+
+	private static void addDrop(List<Widget> widgets, SkyblockMobDropDisplay display, int index, int x, int y) {
+		EntryIngredient drop = display.getOutputEntries().get(index);
+		String chance = display.getDropChances().get(index);
+		Slot slot = Widgets.createSlot(new Point(x, y)).markOutput().entries(drop);
+		widgets.add(chance != null ? new DropChanceSlot(slot, dropStackOf(drop), chance) : slot);
 	}
 
 	/**

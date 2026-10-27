@@ -4,6 +4,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.Minecraft;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +24,7 @@ import moe.example.skyblockrecipeviewer.repo.NeuRepoManager;
  *  - checking/fetching the public, community-maintained NotEnoughUpdates-REPO item data
  *  - fetching Hypixel's own public api.hypixel.net/v2/resources/skyblock/items endpoint,
  *    used only for its skull texture ("skin") data - no API key, no account data involved
- * and both only happen when actually connecting to Hypixel, not on every server join.
+ * Repository data is also initialized at startup when the owned local copy is missing or incomplete.
  */
 public class SkyblockRecipeViewer implements ClientModInitializer {
 	public static final String MOD_ID = "skyblockrecipeviewer";
@@ -31,17 +33,35 @@ public class SkyblockRecipeViewer implements ClientModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger("SkyblockRecipeViewer");
 	private static final long REPO_CHECK_INTERVAL_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
 	private static long nextRepoCheckNanos;
+	private static String pendingRepoStatus;
+
+	private static void showRepoStatus(String message) {
+		Minecraft client = Minecraft.getInstance();
+		client.execute(() -> {
+			if (client.player == null) {
+				pendingRepoStatus = message;
+			} else {
+				pendingRepoStatus = null;
+				client.player.sendSystemMessage(Component.literal("[SBI] " + message).withStyle(ChatFormatting.GRAY));
+			}
+		});
+	}
 
 	@Override
 	public void onInitializeClient() {
 		moe.example.skyblockrecipeviewer.rei.SkyblockPriceTooltipHandler.register();
 		moe.example.skyblockrecipeviewer.rei.SkyblockItemRenameTooltipHandler.register();
 		moe.example.skyblockrecipeviewer.command.SkyblockCommands.register();
+		NeuRepoManager.getInstance().setStatusListener(SkyblockRecipeViewer::showRepoStatus);
 
-		// Prepare all local REI data as early as Minecraft's registries safely allow. This never
-		// blocks client startup or performs network I/O; network refreshes remain join-driven.
+		// Prepare REI data asynchronously, downloading missing repository data on the repo executor.
 		moe.example.skyblockrecipeviewer.rei.SkyblockReiPlugin.startBootstrap();
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (client.player != null && pendingRepoStatus != null) {
+				String message = pendingRepoStatus;
+				pendingRepoStatus = null;
+				showRepoStatus(message);
+			}
 			moe.example.skyblockrecipeviewer.rei.SkyblockReiPlugin.processPendingItemCache();
 			moe.example.skyblockrecipeviewer.rei.SkyblockReiPlugin.processPendingReiRefresh();
 			long now = System.nanoTime();
@@ -64,13 +84,6 @@ public class SkyblockRecipeViewer implements ClientModInitializer {
 				if (!updated) return;
 				LOGGER.info("SkyBlock item repo updated from GitHub and reloaded.");
 				moe.example.skyblockrecipeviewer.rei.SkyblockReiPlugin.onRepositoryReloaded();
-				client.execute(() -> {
-					if (client.player != null) {
-						client.player.sendSystemMessage(Component.literal(
-							"[SkyBlock Recipe Viewer] Item repo updated - items and recipes are "
-								+ "refreshing automatically."));
-					}
-				});
 			});
 			// Hypixel's item resource doesn't have a commit-sha/version marker like the NEU
 			// repo does, so there's nothing cheap to compare against - just re-fetch it
@@ -88,9 +101,8 @@ public class SkyblockRecipeViewer implements ClientModInitializer {
 			// regardless of whether the immediate attempt above already succeeded. Covers
 			// anything that could've silently fallen through the cracks - a slow/flaky
 			// download that hadn't finished by the time REI's plugin reload originally ran,
-			// another SkyBlock mod (see NeuRepoManager.KNOWN_REPO_MANAGERS) populating the
-			// shared repo folder a little later than our own check, or any other transient
-			// timing issue. Each piece is already cheap/idempotent when there's nothing new
+			// the owned repository becoming available a little later than our own check, or another
+			// transient timing issue. Each piece is already cheap/idempotent when there's nothing new
 			// to do (checkForUpdatesOnJoin no-ops if the sha's unchanged, tryLivePush no-ops
 			// if the loaded repo reference hasn't changed since the last push), so this is
 			// safe to fire unconditionally rather than trying to track whether it's "needed".
@@ -104,6 +116,6 @@ public class SkyblockRecipeViewer implements ClientModInitializer {
 				});
 		});
 
-		LOGGER.info("SkyBlock Recipe Viewer {} loaded.", VERSION);
+		LOGGER.info("SkyBlockItems {} loaded.", VERSION);
 	}
 }

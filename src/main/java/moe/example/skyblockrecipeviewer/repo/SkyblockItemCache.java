@@ -36,15 +36,12 @@ import java.util.Map;
  */
 public final class SkyblockItemCache {
 	private static final Logger LOGGER = LogManager.getLogger("SkyblockRecipeViewer/Cache");
-	private static final Path CACHE_FILE = FabricLoader.getInstance().getConfigDir()
-		.resolve("skyblockrecipeviewer").resolve("resolved-items-cache.json");
-	// The same file RepoDownloader/NeuRepoManager use to version the shared NEU repo (see
-	// RepoDownloader's javadoc on config/notenoughupdates/currentCommit.json) - read-only
-	// from here regardless of which mod actually owns/writes the repo folder (see
-	// NeuRepoManager.weManageRepo); we only ever need to read this sha to compare against,
-	// never to write it ourselves.
-	private static final Path REPO_SHA_FILE = FabricLoader.getInstance().getConfigDir()
-		.resolve("notenoughupdates").resolve("currentCommit.json");
+	private static final class CachePaths {
+		private static final Path CACHE_FILE = FabricLoader.getInstance().getConfigDir()
+			.resolve("skyblockrecipeviewer").resolve("resolved-items-cache.json");
+		private static final Path REPO_SHA_FILE = FabricLoader.getInstance().getConfigDir()
+			.resolve("skyblockrecipeviewer").resolve("NEUrepo").resolve("currentCommit.json");
+	}
 
 	private SkyblockItemCache() {
 	}
@@ -58,8 +55,8 @@ public final class SkyblockItemCache {
 	 */
 	public static String currentRepoSha() {
 		try {
-			if (!Files.exists(REPO_SHA_FILE)) return null;
-			JsonObject json = JsonParser.parseString(Files.readString(REPO_SHA_FILE, StandardCharsets.UTF_8))
+			if (!Files.exists(CachePaths.REPO_SHA_FILE)) return null;
+			JsonObject json = JsonParser.parseString(Files.readString(CachePaths.REPO_SHA_FILE, StandardCharsets.UTF_8))
 				.getAsJsonObject();
 			return json.has("sha") ? json.get("sha").getAsString() : null;
 		} catch (Exception e) {
@@ -83,14 +80,10 @@ public final class SkyblockItemCache {
 		String currentSha = currentRepoSha();
 		if (currentSha == null) return true;
 		try {
-			if (!Files.exists(CACHE_FILE)) return true;
-			JsonObject root = JsonParser.parseString(Files.readString(CACHE_FILE, StandardCharsets.UTF_8))
+			if (!Files.exists(CachePaths.CACHE_FILE)) return true;
+			JsonObject root = JsonParser.parseString(Files.readString(CachePaths.CACHE_FILE, StandardCharsets.UTF_8))
 				.getAsJsonObject();
-			if (currentRevision != null && root.has("repoRevision")) {
-				return !currentRevision.equals(root.get("repoRevision").getAsString());
-			}
-			String cachedSha = root.has("repoSha") ? root.get("repoSha").getAsString() : null;
-			return !currentSha.equals(cachedSha);
+			return !matchesRevision(root, currentSha, currentRevision);
 		} catch (Exception e) {
 			return true;
 		}
@@ -109,8 +102,8 @@ public final class SkyblockItemCache {
 	public static Map<String, ItemStack> loadIntoResolverCache() {
 		Map<String, ItemStack> result = new LinkedHashMap<>();
 		try {
-			if (!Files.exists(CACHE_FILE)) return result;
-			JsonObject root = JsonParser.parseString(Files.readString(CACHE_FILE, StandardCharsets.UTF_8))
+			if (!Files.exists(CachePaths.CACHE_FILE)) return result;
+			JsonObject root = JsonParser.parseString(Files.readString(CachePaths.CACHE_FILE, StandardCharsets.UTF_8))
 				.getAsJsonObject();
 			if (!root.has("items")) return result;
 			JsonObject items = root.getAsJsonObject("items");
@@ -137,12 +130,29 @@ public final class SkyblockItemCache {
 		return result;
 	}
 
+	static boolean matchesRevision(JsonObject root, String currentSha, String currentRevision) {
+		if (currentSha == null) return false;
+		if (currentRevision != null && root.has("repoRevision")) {
+			return currentRevision.equals(root.get("repoRevision").getAsString());
+		}
+		return root.has("repoSha") && currentSha.equals(root.get("repoSha").getAsString());
+	}
+
 	public static java.util.List<CachedStack> readCachedStacks() {
+		return readCachedStacks(null, false);
+	}
+
+	public static java.util.List<CachedStack> readCachedStacks(String currentRevision) {
+		return readCachedStacks(currentRevision, true);
+	}
+
+	private static java.util.List<CachedStack> readCachedStacks(String currentRevision, boolean validate) {
 		java.util.List<CachedStack> result = new java.util.ArrayList<>();
 		try {
-			if (!Files.exists(CACHE_FILE)) return result;
-			JsonObject root = JsonParser.parseString(Files.readString(CACHE_FILE, StandardCharsets.UTF_8))
+			if (!Files.exists(CachePaths.CACHE_FILE)) return result;
+			JsonObject root = JsonParser.parseString(Files.readString(CachePaths.CACHE_FILE, StandardCharsets.UTF_8))
 				.getAsJsonObject();
+			if (validate && !matchesRevision(root, currentRepoSha(), currentRevision)) return result;
 			if (!root.has("items")) return result;
 			for (String skyblockId : root.getAsJsonObject("items").keySet()) {
 				result.add(new CachedStack(skyblockId, root.getAsJsonObject("items").get(skyblockId).getAsString()));
@@ -216,8 +226,8 @@ public final class SkyblockItemCache {
 
 	public static void writeSerialized(String serialized) {
 		try {
-			Files.createDirectories(CACHE_FILE.getParent());
-			Files.writeString(CACHE_FILE, serialized, StandardCharsets.UTF_8);
+			Files.createDirectories(CachePaths.CACHE_FILE.getParent());
+			Files.writeString(CachePaths.CACHE_FILE, serialized, StandardCharsets.UTF_8);
 		} catch (Exception e) {
 			LOGGER.error("Failed to write the local resolved-item cache.", e);
 		}

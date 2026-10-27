@@ -24,19 +24,17 @@ public class SkyblockMobDropDisplay extends BasicDisplay {
 	 * Parallel to {@link #getOutputEntries()} - element i is the raw "chance" string (e.g.
 	 * "100%", "2%", "0.00004%" - confirmed straight off a real repo mob file, already
 	 * formatted for display, no numeric parsing needed) for drop i, or null if that particular
-	 * drop has no chance at all. A null chance means the drop is instead a "Hunting Drop" -
-	 * obtained through some special condition rather than a raw probability roll (e.g. "Catch
-	 * with Pocket Black Hole", "Kill while using Salts") - see {@link #getDropExtras()} for
-	 * that condition's description, confirmed against a real repo mob file where exactly this
-	 * pairing (no chance, but an "extra" list) shows up on an attribute shard drop.
+	 * drop has no chance at all. Dungeon rewards may lack probability data; other drops may
+	 * instead describe a hunting condition in {@link #getDropExtras()}.
 	 */
 	private final List<String> dropChances;
 	/** Parallel to {@link #getOutputEntries()} - element i is drop i's own "extra" lines (may be null/empty). */
 	private final List<List<String>> dropExtras;
 
-	public SkyblockMobDropDisplay(NEUMobDropRecipe recipe, List<EntryIngredient> outputs, List<String> dropChances,
+	public SkyblockMobDropDisplay(NEUMobDropRecipe recipe, List<EntryIngredient> inputs,
+			List<EntryIngredient> outputs, List<String> dropChances,
 			List<List<String>> dropExtras) {
-		super(List.of(), outputs);
+		super(inputs, outputs);
 		this.recipe = recipe;
 		this.dropChances = dropChances;
 		this.dropExtras = dropExtras;

@@ -1,0 +1,551 @@
+{
+  "source": "https://hypixelskyblock.minecraft.wiki/w/Dungeon_Reward_Chest",
+  "chance_basis": "Average Chance (S+ Max Bonuses)",
+  "verified": "2026-10-27",
+  "floors": {
+    "F1": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_I/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_COMBO;1": "40.8275%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "40.8275%",
+          "ULTIMATE_BANK;1": "9.5214%",
+          "ULTIMATE_JERRY;1": "4.8043%",
+          "REJUVENATE;1": "66.3152%",
+          "FEATHER_FALLING;6": "34.2586%",
+          "INFINITE_QUIVER;6": "34.2586%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "BONZO_STAFF": "1.8525%",
+          "BONZO_MASK": "6.4354%",
+          "RED_NOSE": "8.0893%",
+          "BALLOON_SNAKE": "10.8403%"
+        }
+      }
+    },
+    "F2": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_II/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_COMBO;1": "25.4728%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "25.4728%",
+          "ULTIMATE_WISE;1": "49.7023%",
+          "ULTIMATE_BANK;1": "20.6024%",
+          "REJUVENATE;1": "62.9792%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "STONE_BLADE": "5.8321%",
+          "ADAPTIVE_BELT": "9.1891%",
+          "RED_SCARF": "3.7087%",
+          "SCARF_STUDIES": "17.6072%"
+        }
+      }
+    },
+    "F3": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_III/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_COMBO;1": "17.5842%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "17.5842%",
+          "ULTIMATE_LAST_STAND;1": "41.817%",
+          "REJUVENATE;2": "41.817%",
+          "ULTIMATE_BANK;2": "30.8082%",
+          "ULTIMATE_WISE;1": "30.8082%",
+          "ULTIMATE_WISDOM;1": "30.8082%",
+          "ULTIMATE_JERRY;2": "4.5345%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "ADAPTIVE_CHESTPLATE": "2.1817%",
+          "ADAPTIVE_LEGGINGS": "2.7957%",
+          "ADAPTIVE_HELMET": "6.325%",
+          "ADAPTIVE_BOOTS": "6.4024%",
+          "SUSPICIOUS_VIAL": "16.8024%"
+        }
+      }
+    },
+    "F4": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_IV/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_REND;2": "6.8098%",
+          "ULTIMATE_COMBO;1": "18.37%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "18.37%",
+          "ULTIMATE_LAST_STAND;1": "43.0687%",
+          "REJUVENATE;2": "43.0687%",
+          "ULTIMATE_BANK;2": "32.2057%",
+          "ULTIMATE_WISE;1": "32.2057%",
+          "ULTIMATE_WISDOM;1": "32.2057%",
+          "ULTIMATE_JERRY;2": "4.8588%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "THORNS_BOOTS": "2.2066%",
+          "ITEM_SPIRIT_BOW": "2.2066%",
+          "SPIRIT_SWORD": "2.2066%",
+          "SPIRIT_WING": "4.5738%",
+          "SPIRIT_BONE": "4.6442%",
+          "SPIRIT;4": "2.9844%",
+          "SPIRIT_DECOY": "6.6786%"
+        }
+      }
+    },
+    "F5": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_V/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_LEGION;1": "12.0009%",
+          "OVERLOAD;1": "12.0009%",
+          "LETHALITY;6": "12.1142%",
+          "ULTIMATE_COMBO;1": "18.0215%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "18.0215%",
+          "ULTIMATE_LAST_STAND;1": "36.0839%",
+          "REJUVENATE;2": "36.0839%",
+          "ULTIMATE_BANK;2": "28.8143%",
+          "ULTIMATE_WISE;1": "28.8143%",
+          "ULTIMATE_WISDOM;1": "28.8143%",
+          "ULTIMATE_JERRY;2": "3.3741%"
+        },
+        "Bedrock Chest": {
+          "ULTIMATE_LEGION;1": "14.8231%",
+          "OVERLOAD;1": "14.8231%",
+          "LETHALITY;6": "15.0265%",
+          "ULTIMATE_COMBO;2": "18.2546%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;2": "18.2546%",
+          "ULTIMATE_LAST_STAND;2": "37.2111%",
+          "REJUVENATE;3": "37.2111%",
+          "ULTIMATE_WISE;2": "33.9381%",
+          "ULTIMATE_WISDOM;2": "22.9055%",
+          "ULTIMATE_BANK;3": "18.784%",
+          "ULTIMATE_JERRY;3": "4.0458%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "LIVID_DAGGER": "0.2959%",
+          "SHADOW_ASSASSIN_CLOAK": "2.0091%",
+          "SHADOW_ASSASSIN_LEGGINGS": "2.0091%",
+          "AOTE_STONE": "0.5023%",
+          "SHADOW_ASSASSIN_HELMET": "4.6307%",
+          "SHADOW_ASSASSIN_BOOTS": "8.1219%",
+          "DARK_ORB": "9.1329%"
+        },
+        "Bedrock Chest": {
+          "SHADOW_FURY": "0.2632%",
+          "LAST_BREATH": "0.4004%",
+          "SHADOW_ASSASSIN_CHESTPLATE": "0.8608%",
+          "LIVID_DAGGER": "1.7223%",
+          "SHADOW_ASSASSIN_CLOAK": "2.5669%",
+          "SHADOW_ASSASSIN_LEGGINGS": "2.5669%",
+          "AOTE_STONE": "1.0269%",
+          "SHADOW_ASSASSIN_HELMET": "6.2945%",
+          "SHADOW_ASSASSIN_BOOTS": "9.4157%",
+          "DARK_ORB": "21.8756%"
+        }
+      }
+    },
+    "F6": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_VI/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_SWARM;1": "9.4142%",
+          "ULTIMATE_COMBO;1": "26.8251%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "26.8251%",
+          "ULTIMATE_LAST_STAND;1": "41.1268%",
+          "REJUVENATE;2": "41.1268%",
+          "ULTIMATE_BANK;2": "33.1217%",
+          "ULTIMATE_WISE;1": "33.1217%",
+          "ULTIMATE_WISDOM;1": "33.1217%",
+          "ULTIMATE_JERRY;2": "3.53%"
+        },
+        "Bedrock Chest": {
+          "ULTIMATE_SWARM;1": "16.3142%",
+          "ULTIMATE_COMBO;2": "26.5297%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;2": "23.6822%",
+          "ULTIMATE_LAST_STAND;2": "46.2038%",
+          "REJUVENATE;3": "46.2038%",
+          "ULTIMATE_WISE;2": "41.8044%",
+          "ULTIMATE_WISDOM;2": "31.0211%",
+          "ULTIMATE_BANK;3": "25.0728%",
+          "ULTIMATE_JERRY;3": "6.3%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "SUMMONING_RING": "0.3695%",
+          "NECROMANCER_SWORD": "0.8282%",
+          "NECROMANCER_LORD_LEGGINGS": "1.2429%",
+          "SOULWEAVER_GLOVES": "1.3331%",
+          "NECROMANCER_LORD_HELMET": "1.8101%",
+          "SADAN_BROOCH": "1.8295%",
+          "NECROMANCER_LORD_BOOTS": "3.3069%",
+          "GIANT_TOOTH": "9.4939%"
+        },
+        "Bedrock Chest": {
+          "PRECURSOR_EYE": "0.1125%",
+          "GIANTS_SWORD": "0.3099%",
+          "NECROMANCER_LORD_CHESTPLATE": "0.5414%",
+          "SUMMONING_RING": "0.6767%",
+          "FEL_SKULL": "1.015%",
+          "NECROMANCER_SWORD": "1.4134%",
+          "NECROMANCER_LORD_LEGGINGS": "2.2137%",
+          "SOULWEAVER_GLOVES": "2.6696%",
+          "NECROMANCER_LORD_HELMET": "3.5981%",
+          "SADAN_BROOCH": "3.9753%",
+          "NECROMANCER_LORD_BOOTS": "6.0144%",
+          "GIANT_TOOTH": "5.7497%"
+        }
+      }
+    },
+    "F7": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_VII/Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_ONE_FOR_ALL;1": "0.5614%",
+          "ULTIMATE_SOUL_EATER;1": "11.6524%",
+          "ULTIMATE_COMBO;1": "30.0626%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "10.2438%",
+          "REJUVENATE;2": "46.5234%",
+          "ULTIMATE_WISE;1": "39.6549%",
+          "ULTIMATE_LAST_STAND;1": "31.7345%",
+          "ULTIMATE_BANK;2": "17.6391%",
+          "ULTIMATE_WISDOM;1": "17.6391%",
+          "ULTIMATE_JERRY;2": "9.8292%"
+        },
+        "Bedrock Chest": {
+          "ULTIMATE_ONE_FOR_ALL;1": "0.986%",
+          "ULTIMATE_SOUL_EATER;1": "14.854%",
+          "ULTIMATE_COMBO;2": "22.5585%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;2": "9.6841%",
+          "ULTIMATE_LAST_STAND;2": "25.2554%",
+          "REJUVENATE;3": "25.2554%",
+          "ULTIMATE_WISE;2": "20.7762%",
+          "ULTIMATE_JERRY;3": "16.0061%",
+          "ULTIMATE_BANK;3": "13.5129%",
+          "ULTIMATE_WISDOM;2": "13.5129%",
+          "INFINITE_QUIVER;7": "33.9082%",
+          "FEATHER_FALLING;7": "13.4839%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "WITHER_CHESTPLATE": "0.5117%",
+          "WITHER_LEGGINGS": "2.4239%",
+          "WITHER_CLOAK": "3.9218%",
+          "WITHER_BLOOD": "4.5296%",
+          "WITHER_HELMET": "4.5296%",
+          "WITHER_BOOTS": "12.1013%",
+          "WITHER_CATALYST": "12.2243%",
+          "PRECURSOR_GEAR": "14.6989%"
+        },
+        "Bedrock Chest": {
+          "NECRON_HANDLE": "0.1176%",
+          "IMPLOSION_SCROLL": "0.2041%",
+          "SHADOW_WARP_SCROLL": "0.2041%",
+          "WITHER_SHIELD_SCROLL": "0.2041%",
+          "AUTO_RECOMBOBULATOR": "0.877%",
+          "WITHER_CHESTPLATE": "0.9311%",
+          "WITHER_LEGGINGS": "4.6798%",
+          "WITHER_CLOAK": "7.6391%",
+          "WITHER_BLOOD": "8.114%",
+          "WITHER_HELMET": "8.114%",
+          "WITHER_BOOTS": "9.3812%",
+          "WITHER_CATALYST": "7.9833%",
+          "PRECURSOR_GEAR": "24.7179%",
+          "GOLDOR_THE_FISH": "6.0113%",
+          "MAXOR_THE_FISH": "6.0113%",
+          "STORM_THE_FISH": "6.0113%"
+        }
+      }
+    },
+    "M1": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_I/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_COMBO;1": "36.0946%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "36.0946%",
+          "ULTIMATE_BANK;1": "8.9546%",
+          "ULTIMATE_JERRY;1": "4.6192%",
+          "REJUVENATE;1": "56.4635%",
+          "FEATHER_FALLING;6": "31.7939%",
+          "INFINITE_QUIVER;6": "31.7939%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "MASTER_SKULL_TIER_1": "6.3607%",
+          "BONZO_STAFF": "2.3103%",
+          "BONZO_MASK": "8.8006%",
+          "RED_NOSE": "12.0316%",
+          "BALLOON_SNAKE": "9.4552%"
+        }
+      }
+    },
+    "M2": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_II/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_COMBO;1": "26.7089%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "26.7089%",
+          "ULTIMATE_WISE;1": "48.3095%",
+          "ULTIMATE_BANK;1": "13.1572%",
+          "REJUVENATE;1": "57.4334%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "MASTER_SKULL_TIER_2": "9.1032%",
+          "STONE_BLADE": "6.0688%",
+          "ADAPTIVE_BELT": "9.7466%",
+          "RED_SCARF": "3.663%",
+          "SCARF_STUDIES": "18.1082%"
+        }
+      }
+    },
+    "M3": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_III/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_COMBO;1": "20.1763%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "20.1763%",
+          "ULTIMATE_LAST_STAND;1": "32.6535%",
+          "REJUVENATE;2": "32.6535%",
+          "ULTIMATE_BANK;2": "25.864%",
+          "ULTIMATE_WISE;1": "25.864%",
+          "ULTIMATE_WISDOM;1": "25.864%",
+          "ULTIMATE_JERRY;2": "4.888%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "FIRST_MASTER_STAR": "4.4899%",
+          "ADAPTIVE_CHESTPLATE": "2.369%",
+          "MASTER_SKULL_TIER_3": "9.6165%",
+          "ADAPTIVE_LEGGINGS": "3.1119%",
+          "ADAPTIVE_HELMET": "6.851%",
+          "ADAPTIVE_BOOTS": "7.2512%",
+          "SUSPICIOUS_VIAL": "18.1307%"
+        }
+      }
+    },
+    "M4": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_IV/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_REND;2": "7.8202%",
+          "ULTIMATE_COMBO;1": "23.1068%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "19.0005%",
+          "ULTIMATE_LAST_STAND;1": "35.0663%",
+          "REJUVENATE;2": "35.0663%",
+          "ULTIMATE_BANK;2": "27.9383%",
+          "ULTIMATE_WISE;1": "27.9383%",
+          "ULTIMATE_WISDOM;1": "27.9383%",
+          "ULTIMATE_JERRY;2": "5.3544%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "SECOND_MASTER_STAR": "4.8989%",
+          "SPIRIT_MASK": "0.6124%",
+          "THORNS_BOOTS": "2.4506%",
+          "ITEM_SPIRIT_BOW": "2.4506%",
+          "SPIRIT_SWORD": "2.4506%",
+          "MASTER_SKULL_TIER_3": "7.4759%",
+          "SPIRIT_WING": "4.984%",
+          "SPIRIT_BONE": "5.8589%",
+          "SPIRIT;4": "3.3178%",
+          "SPIRIT_DECOY": "7.1466%"
+        }
+      }
+    },
+    "M5": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_V/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_LEGION;1": "13.0954%",
+          "OVERLOAD;1": "13.0954%",
+          "LETHALITY;6": "13.4094%",
+          "ULTIMATE_COMBO;1": "20.1325%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "20.1325%",
+          "ULTIMATE_LAST_STAND;1": "37.4824%",
+          "REJUVENATE;2": "37.4824%",
+          "ULTIMATE_BANK;2": "29.8216%",
+          "ULTIMATE_WISE;1": "29.8216%",
+          "ULTIMATE_WISDOM;1": "29.8216%",
+          "ULTIMATE_JERRY;2": "3.4536%"
+        },
+        "Bedrock Chest": {
+          "ULTIMATE_LEGION;1": "17.7685%",
+          "OVERLOAD;1": "17.7685%",
+          "LETHALITY;6": "18.5666%",
+          "ULTIMATE_COMBO;2": "17.9082%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;2": "17.9082%",
+          "ULTIMATE_LAST_STAND;2": "38.9471%",
+          "REJUVENATE;3": "38.9471%",
+          "ULTIMATE_WISE;2": "34.671%",
+          "ULTIMATE_WISDOM;2": "15.7079%",
+          "ULTIMATE_BANK;3": "13.2529%",
+          "ULTIMATE_JERRY;3": "5.4921%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "LIVID_DAGGER": "0.495%",
+          "THIRD_MASTER_STAR": "0.495%",
+          "SHADOW_ASSASSIN_CLOAK": "2.1471%",
+          "SHADOW_ASSASSIN_LEGGINGS": "2.1471%",
+          "AOTE_STONE": "0.5668%",
+          "MASTER_SKULL_TIER_3": "2.2673%",
+          "SHADOW_ASSASSIN_HELMET": "5.3542%",
+          "SHADOW_ASSASSIN_BOOTS": "8.6948%",
+          "DARK_ORB": "8.5424%"
+        },
+        "Bedrock Chest": {
+          "SHADOW_FURY": "0.4702%",
+          "LAST_BREATH": "0.4704%",
+          "SHADOW_ASSASSIN_CHESTPLATE": "1.0445%",
+          "LIVID_DAGGER": "2.3356%",
+          "THIRD_MASTER_STAR": "1.1678%",
+          "SHADOW_ASSASSIN_CLOAK": "3.3889%",
+          "SHADOW_ASSASSIN_LEGGINGS": "3.3889%",
+          "AOTE_STONE": "1.3556%",
+          "MASTER_SKULL_TIER_4": "3.4514%",
+          "SHADOW_ASSASSIN_HELMET": "7.4665%",
+          "SHADOW_ASSASSIN_BOOTS": "12.5377%",
+          "DARK_ORB": "26.8019%"
+        }
+      }
+    },
+    "M6": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_VI/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_SWARM;1": "10.0995%",
+          "ULTIMATE_COMBO;1": "30.8515%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "30.8515%",
+          "ULTIMATE_LAST_STAND;1": "43.7349%",
+          "REJUVENATE;2": "43.7349%",
+          "ULTIMATE_BANK;2": "35.1769%",
+          "ULTIMATE_WISE;1": "35.1769%",
+          "ULTIMATE_WISDOM;1": "35.1769%",
+          "ULTIMATE_JERRY;2": "3.709%"
+        },
+        "Bedrock Chest": {
+          "ULTIMATE_SWARM;1": "19.1287%",
+          "ULTIMATE_COMBO;2": "28.3677%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;2": "25.2081%",
+          "ULTIMATE_LAST_STAND;2": "49.3651%",
+          "REJUVENATE;3": "49.3651%",
+          "ULTIMATE_WISE;2": "44.8674%",
+          "ULTIMATE_WISDOM;2": "33.8264%",
+          "ULTIMATE_BANK;3": "27.7962%",
+          "ULTIMATE_JERRY;3": "7.2358%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "FOURTH_MASTER_STAR": "1.2057%",
+          "SUMMONING_RING": "0.4019%",
+          "NECROMANCER_SWORD": "0.8612%",
+          "NECROMANCER_LORD_LEGGINGS": "1.3283%",
+          "MASTER_SKULL_TIER_4": "3.16%",
+          "SOULWEAVER_GLOVES": "1.58%",
+          "NECROMANCER_LORD_HELMET": "2.1216%",
+          "SADAN_BROOCH": "2.3852%",
+          "NECROMANCER_LORD_BOOTS": "3.6132%",
+          "GIANT_TOOTH": "10.1191%"
+        },
+        "Bedrock Chest": {
+          "PRECURSOR_EYE": "0.1983%",
+          "GIANTS_SWORD": "0.4007%",
+          "NECROMANCER_LORD_CHESTPLATE": "0.5753%",
+          "FOURTH_MASTER_STAR": "0.7192%",
+          "SUMMONING_RING": "0.7192%",
+          "FEL_SKULL": "1.2889%",
+          "NECROMANCER_SWORD": "1.736%",
+          "MASTER_SKULL_TIER_4": "0.9549%",
+          "NECROMANCER_LORD_LEGGINGS": "2.8956%",
+          "SOULWEAVER_GLOVES": "2.9493%",
+          "NECROMANCER_LORD_HELMET": "3.9882%",
+          "SADAN_BROOCH": "4.3425%",
+          "NECROMANCER_LORD_BOOTS": "6.5644%",
+          "GIANT_TOOTH": "6.7631%"
+        }
+      }
+    },
+    "M7": {
+      "source": "https://hypixelskyblock.minecraft.wiki/w/The_Catacombs_-_Floor_VII/Master_Mode_Loot",
+      "chests": {
+        "Obsidian Chest": {
+          "ULTIMATE_ONE_FOR_ALL;1": "0.208%",
+          "ULTIMATE_SOUL_EATER;1": "8.0653%",
+          "ULTIMATE_COMBO;1": "20.9479%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;1": "7.0078%",
+          "REJUVENATE;2": "35.2727%",
+          "ULTIMATE_WISE;1": "29.0475%",
+          "ULTIMATE_LAST_STAND;1": "22.3877%",
+          "ULTIMATE_BANK;2": "11.623%",
+          "ULTIMATE_WISDOM;1": "11.623%",
+          "ULTIMATE_JERRY;2": "6.3003%"
+        },
+        "Bedrock Chest": {
+          "ULTIMATE_ONE_FOR_ALL;1": "1.2881%",
+          "THUNDERLORD;7": "0.4247%",
+          "ULTIMATE_SOUL_EATER;1": "17.2611%",
+          "ULTIMATE_COMBO;2": "25.7005%",
+          "ULTIMATE_NO_PAIN_NO_GAIN;2": "11.1037%",
+          "ULTIMATE_LAST_STAND;2": "27.8342%",
+          "REJUVENATE;3": "27.8342%",
+          "ULTIMATE_WISE;2": "22.9981%",
+          "ULTIMATE_JERRY;3": "17.8008%",
+          "ULTIMATE_BANK;3": "15.0644%",
+          "ULTIMATE_WISDOM;2": "15.0644%",
+          "INFINITE_QUIVER;7": "37.0597%",
+          "FEATHER_FALLING;7": "16.3204%"
+        }
+      },
+      "item_chests": {
+        "Obsidian Chest": {
+          "FIFTH_MASTER_STAR": "0.1987%",
+          "WITHER_CHESTPLATE": "0.2025%",
+          "MASTER_SKULL_TIER_4": "1.584%",
+          "WITHER_LEGGINGS": "1.584%",
+          "WITHER_CLOAK": "2.4252%",
+          "WITHER_BLOOD": "2.4389%",
+          "WITHER_HELMET": "2.4389%",
+          "WITHER_BOOTS": "8.0967%",
+          "WITHER_CATALYST": "8.8291%",
+          "PRECURSOR_GEAR": "10.2974%"
+        },
+        "Bedrock Chest": {
+          "IMPLOSION_SCROLL": "0.2781%",
+          "SHADOW_WARP_SCROLL": "0.2781%",
+          "WITHER_SHIELD_SCROLL": "0.2781%",
+          "NECRON_HANDLE": "0.2003%",
+          "DARK_CLAYMORE": "0.1181%",
+          "AUTO_RECOMBOBULATOR": "1.116%",
+          "FIFTH_MASTER_STAR": "0.4185%",
+          "WITHER_CHESTPLATE": "1.1882%",
+          "WITHER_LEGGINGS": "5.8363%",
+          "MASTER_SKULL_TIER_5": "0.4416%",
+          "WITHER_CLOAK": "9.2778%",
+          "WITHER_BLOOD": "9.7425%",
+          "WITHER_HELMET": "9.7425%",
+          "WITHER_BOOTS": "11.0141%",
+          "WITHER_CATALYST": "9.5306%",
+          "PRECURSOR_GEAR": "27.8164%",
+          "GOLDOR_THE_FISH": "5.989%",
+          "MAXOR_THE_FISH": "5.989%",
+          "STORM_THE_FISH": "5.989%",
+          "DYE_NECRON": "0.04%"
+        }
+      }
+    }
+  }
+}

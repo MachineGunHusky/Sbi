@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 
 import io.github.moulberry.repo.NEURepository;
 import io.github.moulberry.repo.data.NEUCraftingRecipe;
@@ -24,6 +26,7 @@ import me.shedaniel.rei.api.common.entry.EntryStack;
 import dev.architectury.event.EventResult;
 import moe.example.skyblockrecipeviewer.SkyblockRecipeViewer;
 import moe.example.skyblockrecipeviewer.repo.HypixelSkinManager;
+import moe.example.skyblockrecipeviewer.repo.DungeonRewards;
 import moe.example.skyblockrecipeviewer.repo.NeuRepoManager;
 import moe.example.skyblockrecipeviewer.repo.NpcShopIndex;
 import moe.example.skyblockrecipeviewer.repo.SkyblockItemResolver;
@@ -70,6 +73,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 	private static int pendingCacheIndex = 0;
 	private static final List<ItemStack> decodedCachedStacks = new ArrayList<>();
 	private static boolean cacheReadComplete = false;
+	private static final long CACHE_DECODE_BUDGET_NANOS = TimeUnit.MILLISECONDS.toNanos(2);
 	private static NEURepository pendingCacheRepo;
 	private static volatile NEURepository repoAwaitingReiRefresh;
 	private static volatile NEURepository reiRefreshPendingRepo;
@@ -100,17 +104,15 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 			SkyblockRecipeViewer.LOGGER.info("SkyBlock REI data bootstrap completed.");
 			CompletableFuture.supplyAsync(() -> {
 				NEURepository repository = manager.getLoadedRepoOrNull();
-				boolean current = repository != null
-					&& !SkyblockItemCache.isStale(manager.getLoadedRevisionKey());
 				return new CachedItemLoad(repository,
-					current ? SkyblockItemCache.readCachedStacks() : List.of());
+					repository == null ? List.of() : SkyblockItemCache.readCachedStacks(manager.getLoadedRevisionKey()));
 			}, ITEM_RESOLVE_EXECUTOR).thenAccept(cached ->
 				net.minecraft.client.Minecraft.getInstance().execute(() -> {
 					pendingCachedStacks = cached.stacks();
 					pendingCacheRepo = cached.repository();
 					pendingCacheIndex = 0;
 					decodedCachedStacks.clear();
-					cacheReadComplete = true;
+					cacheReadComplete = cached.stacks().isEmpty();
 					if (cached.stacks().isEmpty()) tryLivePush();
 				}));
 			net.minecraft.client.Minecraft.getInstance().execute(SkyblockReiPlugin::tryLivePush);
@@ -222,6 +224,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		// lightweight wrappers here while retaining the prepared ItemStacks across reloads.
 		List<ItemStack> cached = preparedItemStacks;
 		if (cached.isEmpty()) return false;
+		long started = System.nanoTime();
 
 		List<EntryStack<ItemStack>> entries = new ArrayList<>(cached.size());
 		for (ItemStack stack : cached) {
@@ -229,7 +232,8 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		}
 		registry.addEntries(entries);
 		SkyblockRecipeViewer.LOGGER.info(
-			"Registered {} prepared SkyBlock item entries.", entries.size());
+			"Registered {} prepared SkyBlock item entries in {} ms.", entries.size(),
+			TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started));
 		return true;
 	}
 
@@ -246,25 +250,40 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 	}
 
 	public static void processPendingItemCache() {
-		if (pendingCachedStacks.isEmpty() || pendingCacheIndex >= pendingCachedStacks.size()) return;
+		if (pendingCachedStacks.isEmpty()) return;
 		if (net.minecraft.client.Minecraft.getInstance().getConnection() == null || !reiPluginsRegistered) return;
 		if (pendingCacheRepo != NeuRepoManager.getInstance().getLoadedRepoOrNull()) {
 			pendingCachedStacks = List.of();
+			pendingCacheRepo = null;
+			pendingCacheIndex = 0;
 			decodedCachedStacks.clear();
+			cacheReadComplete = true;
 			tryLivePush();
 			return;
 		}
-		int end = Math.min(pendingCacheIndex + 100, pendingCachedStacks.size());
-		for (; pendingCacheIndex < end; pendingCacheIndex++) {
-			ItemStack stack = SkyblockItemCache.decodeCachedStack(pendingCachedStacks.get(pendingCacheIndex));
+		pendingCacheIndex = processCacheBatch(pendingCachedStacks, pendingCacheIndex, cached -> {
+			ItemStack stack = SkyblockItemCache.decodeCachedStack(cached);
 			if (!stack.isEmpty()) decodedCachedStacks.add(stack);
-		}
+		}, System::nanoTime);
 		if (pendingCacheIndex < pendingCachedStacks.size()) return;
+		if (isReiReloading()) return;
+		if (decodedCachedStacks.size() != pendingCacheRepo.getItems().getItems().size()) {
+			SkyblockRecipeViewer.LOGGER.warn("Resolved-item cache is incomplete ({} of {} items); resolving missing items before registration.",
+				decodedCachedStacks.size(), pendingCacheRepo.getItems().getItems().size());
+			pendingCachedStacks = List.of();
+			pendingCacheRepo = null;
+			pendingCacheIndex = 0;
+			decodedCachedStacks.clear();
+			cacheReadComplete = true;
+			tryLivePush();
+			return;
+		}
 		preparedItemStacks = List.copyOf(decodedCachedStacks);
 		preparedItemStacksRepo = pendingCacheRepo;
 		pendingCachedStacks = List.of();
 		pendingCacheRepo = null;
 		decodedCachedStacks.clear();
+		cacheReadComplete = true;
 		SkyblockRecipeViewer.LOGGER.info("Loaded {} SkyBlock item(s) from the local resolved-item cache.", preparedItemStacks.size());
 		if (reiPluginsRegistered && !preparedItemStacks.isEmpty()) {
 			SkyblockItemEntryDefinition.registerType();
@@ -273,6 +292,17 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 			registry.refilter();
 		}
 		tryLivePush();
+	}
+
+	static <T> int processCacheBatch(List<T> items, int start, Consumer<T> decode, LongSupplier clock) {
+		long started = clock.getAsLong();
+		int end = Math.min(start + 100, items.size());
+		int index = start;
+		while (index < end) {
+			decode.accept(items.get(index++));
+			if (clock.getAsLong() - started >= CACHE_DECODE_BUDGET_NANOS) break;
+		}
+		return index;
 	}
 
 	public static void onRepositoryReloaded() {
@@ -290,6 +320,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 	}
 
 	private static void tryLivePushOnClient() {
+		if (!cacheReadComplete || !pendingCachedStacks.isEmpty()) return;
 		// Bail out of the retry chain once we're no longer connected to a server (quit back to
 		// the main menu, or disconnected). Without this, every join that happens to land before
 		// REI's own plugin reload finishes (e.g. REI cancels and restarts that reload on every
@@ -337,6 +368,12 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 	}
 
 	private static void finishLivePush(NEURepository loaded, List<ItemStack> resolvedStacks, Throwable error) {
+		if (error == null && loaded == NeuRepoManager.getInstance().getLoadedRepoOrNull()
+			&& net.minecraft.client.Minecraft.getInstance().getConnection() != null && isReiReloading()) {
+			CompletableFuture.delayedExecutor(100, TimeUnit.MILLISECONDS).execute(() ->
+				net.minecraft.client.Minecraft.getInstance().execute(() -> finishLivePush(loaded, resolvedStacks, null)));
+			return;
+		}
 		synchronized (pushLock) {
 			livePushInProgress = false;
 		}
@@ -360,6 +397,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		}
 		SkyblockItemEntryDefinition.registerType();
 		if (!refreshRecipes) {
+			long started = System.nanoTime();
 			EntryRegistry registry = EntryRegistry.getInstance();
 			List<EntryStack<ItemStack>> entries = new ArrayList<>(resolvedStacks.size());
 			for (ItemStack stack : resolvedStacks) {
@@ -368,19 +406,25 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 			registry.addEntries(entries);
 			registry.refilter();
 			SkyblockRecipeViewer.LOGGER.info(
-				"Registered {} SkyBlock item entries in REI as one batch.", entries.size());
+				"Registered {} SkyBlock item entries in REI as one batch in {} ms.", entries.size(),
+				TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started));
 		}
 		synchronized (pushLock) {
 			lastLivePushedRepo = loaded;
 		}
-		String repoSha = SkyblockItemCache.currentRepoSha();
+		String revision = NeuRepoManager.getInstance().getLoadedRevisionKey();
 		Map<String, ItemStack> snapshot = SkyblockItemResolver.snapshotResolvedCache();
-		String cacheJson = SkyblockItemCache.serialize(repoSha,
-			NeuRepoManager.getInstance().getLoadedRevisionKey(), snapshot);
-		if (cacheJson != null) {
-			CompletableFuture.runAsync(() -> SkyblockItemCache.writeSerialized(cacheJson), ITEM_RESOLVE_EXECUTOR);
-		}
-		CompletableFuture.runAsync(SkullTextureCache::flush, ITEM_RESOLVE_EXECUTOR);
+		CompletableFuture.runAsync(() -> {
+			if (loaded != NeuRepoManager.getInstance().getLoadedRepoOrNull()) return;
+			String repoSha = SkyblockItemCache.currentRepoSha();
+			if (repoSha != null && revision != null && revision.startsWith(repoSha + ":")) {
+				String cacheJson = SkyblockItemCache.serialize(repoSha, revision, snapshot);
+				if (cacheJson != null && loaded == NeuRepoManager.getInstance().getLoadedRepoOrNull()) {
+					SkyblockItemCache.writeSerialized(cacheJson);
+				}
+			}
+			SkullTextureCache.flush();
+		}, ITEM_RESOLVE_EXECUTOR);
 	}
 
 	public static void processPendingReiRefresh() {
@@ -671,22 +715,24 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		List<EntryIngredient> outputs = new ArrayList<>();
 		List<String> chances = new ArrayList<>();
 		List<List<String>> extras = new ArrayList<>();
+		DungeonRewards.Floor floor = DungeonRewards.floor(recipe);
 		for (io.github.moulberry.repo.data.NEUMobDropRecipe.Drop drop : recipe.getDrops()) {
 			NEUIngredient dropItem = drop.getDropItem();
 			if (dropItem == null || SkyblockItemResolver.isEmptySlot(dropItem)) continue;
+			if (floor != null && !DungeonRewards.isVisibleDrop(
+				repository.getItems().getItems().get(dropItem.getItemId()), drop, recipe.getDrops())) continue;
 			ItemStack stack = SkyblockItemResolver.resolve(repository, dropItem);
 			if (stack.isEmpty()) continue;
 			String chance = drop.getChance();
 			List<String> extra = drop.getExtra();
-			// A drop with no chance at all is a "Hunting Drop" - obtained through some special
-			// condition (e.g. "Catch with Pocket Black Hole") rather than a raw probability
-			// roll, described in "extra" instead - confirmed against a real repo mob file
-			// where exactly this pairing shows up (an attribute shard drop with no "chance" key
-			// but a populated "extra" list). Baked directly into the item's own lore (same
-			// proven-reliable technique already used for reforge stones) rather than via REI's
-			// Widgets.withTooltip, whose append-vs-replace semantics against a Slot's own
-			// existing item tooltip couldn't be confirmed from here.
-			if (chance == null && extra != null && !extra.isEmpty()) {
+			if (floor != null) {
+				if (floor.number() < 5 && "Bedrock Chest".equals(DungeonRewards.chest(extra))) continue;
+				List<String> lore = new ArrayList<>();
+				lore.add(floor.title());
+				if (extra != null) lore.addAll(extra);
+				lore.add(chance == null ? "Drop Chance: Unknown" : "Drop Chance: " + chance);
+				stack = withExtraLore(stack, "Dungeon Reward", lore);
+			} else if (chance == null && extra != null && !extra.isEmpty()) {
 				stack = withExtraLore(stack, "Hunting Drop", extra);
 			} else if (chance != null) {
 				// The chance is also drawn directly on the slot as a corner label (see
@@ -707,7 +753,13 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 			extras.add(extra);
 		}
 		if (outputs.isEmpty()) return null;
-		return new SkyblockMobDropDisplay(recipe, outputs, chances, extras);
+		List<EntryIngredient> inputs = new ArrayList<>();
+		if (floor != null) {
+			ItemStack boss = SkyblockItemResolver.resolve(repository,
+				NEUIngredient.fromItem(recipe.getDropsFrom(), 1));
+			if (!boss.isEmpty()) inputs.add(EntryIngredient.of(EntryStack.of(SkyblockItemEntryDefinition.TYPE, boss)));
+		}
+		return new SkyblockMobDropDisplay(recipe, inputs, outputs, chances, extras);
 	}
 
 	/**

@@ -7,7 +7,7 @@ cd /d "%~dp0"
 set JAVA_HOME=C:\Program Files\Java\jdk-25.0.2
 set PATH=%JAVA_HOME%\bin;%PATH%
 
-echo Building SkyBlock Recipe Viewer...
+echo Building SkyBlockItems...
 echo (First run downloads Gradle + all dependencies - can take a few minutes.)
 echo.
 

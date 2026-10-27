@@ -90,10 +90,13 @@ public final class RecipeDedup {
 	}
 
 	public static String mobDropSignature(NEUMobDropRecipe recipe) {
-		StringBuilder sb = new StringBuilder("mobdrop");
+		StringBuilder sb = new StringBuilder("mobdrop|").append(recipe.getName())
+			.append('|').append(recipe.getLevel()).append('|').append(recipe.getPanorama())
+			.append('|').append(recipe.getRender()).append('|').append(recipe.getExtra());
 		if (recipe.getDrops() != null) {
 			for (NEUMobDropRecipe.Drop drop : recipe.getDrops()) {
-				sb.append('|').append(ingredientSig(drop.getDropItem()));
+				sb.append('|').append(ingredientSig(drop.getDropItem()))
+					.append('|').append(drop.getChance()).append('|').append(drop.getExtra());
 			}
 		}
 		return sb.toString();

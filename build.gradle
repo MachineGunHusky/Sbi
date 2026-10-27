@@ -25,6 +25,10 @@ base {
 	archivesName = project.archives_base_name
 }
 
+tasks.withType(Jar).configureEach {
+	archiveVersion = project.mod_version.toString()
+}
+
 repositories {
 	mavenCentral()
 	maven { url = 'https://maven.shedaniel.me' ; name = 'shedaniel' } // REI

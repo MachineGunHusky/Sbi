@@ -21,11 +21,8 @@ import com.google.gson.JsonParser;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Downloads the public NotEnoughUpdates-REPO item repository from GitHub and extracts it
- * to disk, mirroring the exact layout/versioning convention the original NotEnoughUpdates
- * mod uses at config/notenoughupdates/ (a "repo" folder plus a currentCommit.json sha
- * marker) - so this mod reads and writes the *same* shared copy other SkyBlock mods use,
- * rather than keeping a separate copy of the same data.
+ * Downloads the public NotEnoughUpdates-REPO data into this mod's own NEUrepo directory.
+ * The revision marker lives inside the repository; staging and backup directories are siblings.
  *
  * This is plain data (item/recipe JSON), not the mod's own release artifact - there is no
  * self-update-checker here, and nothing about installed mods is ever sent anywhere.
@@ -46,6 +43,8 @@ public final class RepoDownloader {
 	private final Path backupDir;
 	private final Path commitFile;
 	private final Logger logger;
+	private final URI latestCommitUrl;
+	private final URI archiveBaseUrl;
 	private final HttpClient httpClient = HttpClient.newBuilder()
 		.connectTimeout(Duration.ofSeconds(15))
 		// GitHub's codeload/archive endpoints redirect (302) fairly routinely - e.g. between
@@ -57,24 +56,39 @@ public final class RepoDownloader {
 		.followRedirects(HttpClient.Redirect.NORMAL)
 		.build();
 
-	/**
-	 * @param neuConfigDir the shared config/notenoughupdates directory - repo goes in
-	 *                     neuConfigDir/repo, version marker in neuConfigDir/currentCommit.json,
-	 *                     matching the original NotEnoughUpdates mod's own layout exactly.
-	 */
-	public RepoDownloader(Path neuConfigDir, Logger logger) {
-		this.repoDir = neuConfigDir.resolve("repo");
-		this.stagingDir = neuConfigDir.resolve("repo.update-staging");
-		this.backupDir = neuConfigDir.resolve("repo.update-backup");
-		this.commitFile = neuConfigDir.resolve("currentCommit.json");
+	public RepoDownloader(Path repoPath, Logger logger) {
+		this(repoPath, logger,
+			URI.create("https://api.github.com/repos/" + OWNER + "/" + REPO + "/commits/" + BRANCH),
+			URI.create("https://github.com/" + OWNER + "/" + REPO + "/archive/"));
+	}
+
+	RepoDownloader(Path repoPath, Logger logger, URI latestCommitUrl, URI archiveBaseUrl) {
+		this.repoDir = repoPath.toAbsolutePath().normalize();
+		this.stagingDir = repoDir.resolveSibling(repoDir.getFileName() + ".update-staging");
+		this.backupDir = repoDir.resolveSibling(repoDir.getFileName() + ".update-backup");
+		this.commitFile = repoDir.resolve("currentCommit.json");
 		this.logger = logger;
+		this.latestCommitUrl = latestCommitUrl;
+		this.archiveBaseUrl = archiveBaseUrl;
+		ensureRepoDirectory();
 	}
 
 	public Path getRepoDir() {
 		return repoDir;
 	}
 
+	boolean ensureRepoDirectory() {
+		try {
+			Files.createDirectories(repoDir);
+			return true;
+		} catch (IOException | SecurityException e) {
+			logger.error("Could not create NEU repository directory {}. Repository operations will retry later.", repoDir, e);
+			return false;
+		}
+	}
+
 	String loadSavedSha() {
+		if (!ensureRepoDirectory()) return null;
 		try {
 			if (Files.exists(repoDir) && Files.exists(commitFile)) {
 				JsonObject json = JsonParser.parseString(Files.readString(commitFile, StandardCharsets.UTF_8))
@@ -101,8 +115,7 @@ public final class RepoDownloader {
 	}
 
 	private String fetchLatestSha() throws IOException, InterruptedException {
-		String url = "https://api.github.com/repos/" + OWNER + "/" + REPO + "/commits/" + BRANCH;
-		HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+		HttpRequest request = HttpRequest.newBuilder(latestCommitUrl)
 			.header("Accept", "application/vnd.github+json")
 			.timeout(Duration.ofSeconds(15))
 			.GET()
@@ -125,6 +138,11 @@ public final class RepoDownloader {
 	 *         or empty if already up to date or the check failed (e.g. offline)
 	 */
 	public java.util.Optional<String> checkForUpdate() {
+		return checkForUpdate(false);
+	}
+
+	java.util.Optional<String> checkForUpdate(boolean force) {
+		if (!ensureRepoDirectory()) return java.util.Optional.empty();
 		String latestSha;
 		try {
 			latestSha = fetchLatestSha();
@@ -133,7 +151,7 @@ public final class RepoDownloader {
 			return java.util.Optional.empty();
 		}
 		String currentSha = loadSavedSha();
-		if (latestSha.equals(currentSha)) {
+		if (!force && latestSha.equals(currentSha)) {
 			logger.debug("SkyBlock item repo already up to date ({})", currentSha);
 			return java.util.Optional.empty();
 		}
@@ -142,16 +160,17 @@ public final class RepoDownloader {
 
 	/**
 	 * Downloads and extracts the given sha into a staging directory, validates it, then
-	 * transactionally replaces the shared repo and records it in currentCommit.json.
+	 * transactionally replaces the owned repo and records it in currentCommit.json.
 	 * Safe to call from a background thread.
 	 *
 	 * @return true on success
 	 */
 	public boolean downloadAndApply(String sha) {
+		if (!ensureRepoDirectory()) return false;
 		Path zip = null;
 		try {
 			prepareUpdateDirectories();
-			String downloadUrl = "https://github.com/" + OWNER + "/" + REPO + "/archive/" + sha + ".zip";
+			String downloadUrl = archiveBaseUrl.resolve(sha + ".zip").toString();
 			logger.info("Downloading SkyBlock item repo (-> {})", sha);
 			zip = downloadArchive(downloadUrl);
 			extract(zip, stagingDir);
@@ -173,9 +192,16 @@ public final class RepoDownloader {
 	}
 
 	private void prepareUpdateDirectories() throws IOException {
-		Files.createDirectories(repoDir.getParent());
-		if (!Files.exists(repoDir) && Files.exists(backupDir)) {
-			moveDirectory(backupDir, repoDir);
+		Files.createDirectories(repoDir);
+		if (Files.exists(backupDir)) {
+			boolean empty;
+			try (var files = Files.list(repoDir)) {
+				empty = files.findAny().isEmpty();
+			}
+			if (empty) {
+				Files.delete(repoDir);
+				moveDirectory(backupDir, repoDir);
+			}
 		}
 		if (Files.exists(repoDir)) {
 			deleteRecursively(backupDir);
