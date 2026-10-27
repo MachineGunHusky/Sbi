@@ -1,8 +1,0 @@
-{
-  "required": true,
-  "package": "moe.example.skyblockrecipeviewer.mixin",
-  "compatibilityLevel": "JAVA_25",
-  "client": [
-    "accessors.AbstractContainerScreenAccessor"
-  ]
-}
