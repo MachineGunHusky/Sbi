@@ -76,7 +76,7 @@ public final class SkyblockPriceTooltipHandler {
 	 * Books are confirmed exceptions - see {@link #shardBazaarAlias} and
 	 * {@link #enchantedBookBazaarAlias} - so for those, a second candidate is also tried.
 	 */
-	private static List<String> priceLookupIds(String skyblockId, ItemStack stack) {
+	static List<String> priceLookupIds(String skyblockId, ItemStack stack) {
 		if (skyblockId.startsWith("ATTRIBUTE_SHARD_")) {
 			String alias = shardBazaarAlias(stack);
 			return alias != null ? List.of(skyblockId, alias) : List.of(skyblockId);

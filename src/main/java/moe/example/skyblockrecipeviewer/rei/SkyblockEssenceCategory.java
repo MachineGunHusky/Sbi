@@ -2,11 +2,13 @@ package moe.example.skyblockrecipeviewer.rei;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
+import io.github.moulberry.repo.data.NEUIngredient;
 
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
+import me.shedaniel.rei.api.client.gui.widgets.Tooltip;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.WidgetWithBounds;
@@ -17,7 +19,6 @@ import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import moe.example.skyblockrecipeviewer.SkyblockRecipeViewer;
-import moe.example.skyblockrecipeviewer.repo.SkyblockPriceManager;
 import moe.example.skyblockrecipeviewer.repo.essence.EssenceUpgradeRecipe;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -74,7 +75,9 @@ public class SkyblockEssenceCategory implements DisplayCategory<SkyblockEssenceD
 
 		WidgetWithBounds arrow = Widgets.createArrow(new Point(
 			bounds.getX() + (bounds.getWidth() - 22) / 2, top));
-		widgets.add(Widgets.withTooltip(arrow, priceTooltip(recipe)));
+		widgets.add(arrow);
+		widgets.add(Widgets.createTooltip(mouse -> arrow.getBounds().contains(mouse)
+			? Tooltip.create(mouse, priceTooltip(recipe)) : null));
 
 		int costX = left;
 		int costY = top + 20;
@@ -95,44 +98,13 @@ public class SkyblockEssenceCategory implements DisplayCategory<SkyblockEssenceD
 	}
 
 	private static List<Component> priceTooltip(EssenceUpgradeRecipe recipe) {
-		List<String> costs = new ArrayList<>();
-		costs.add(recipe.essenceSkyblockId() + ":" + recipe.essenceCost());
-		costs.addAll(recipe.extraItemIds());
-		List<Component> lines = new ArrayList<>();
-		lines.add(Component.literal("Star upgrade: " + (recipe.starCountAfter() - 1) + " -> " + recipe.starCountAfter()));
-		lines.add(Component.literal("Insta-buy: " + totalCost(costs, true)));
-		lines.add(Component.literal("Buy order: " + totalCost(costs, false)));
-		return lines;
-	}
-
-	private static String totalCost(List<String> costs, boolean instantBuy) {
-		SkyblockPriceManager prices = SkyblockPriceManager.getInstance();
-		double total = 0;
-		for (String cost : costs) {
-			int colon = cost.lastIndexOf(':');
-			if (colon <= 0 || colon == cost.length() - 1) return "Unavailable";
-			String itemId = cost.substring(0, colon);
-			double amount;
-			try {
-				amount = Double.parseDouble(cost.substring(colon + 1));
-			} catch (NumberFormatException e) {
-				return "Unavailable";
-			}
-			if ("SKYBLOCK_COIN".equalsIgnoreCase(itemId)) {
-				total += amount;
-				continue;
-			}
-			Optional<SkyblockPriceManager.BazaarPrice> bazaar = prices.getBazaarPrice(itemId);
-			double unitPrice = Double.NaN;
-			if (bazaar.isPresent()) {
-				unitPrice = instantBuy ? bazaar.get().instantBuyPrice() : bazaar.get().instantSellPrice();
-			}
-			if (Double.isNaN(unitPrice)) {
-				unitPrice = prices.getAuctionLowestBin(itemId).orElse(Double.NaN);
-			}
-			if (Double.isNaN(unitPrice)) return "Unavailable";
-			total += amount * unitPrice;
+		List<RecipeCostTooltip.Cost> costs = new ArrayList<>();
+		costs.add(new RecipeCostTooltip.Cost(List.of(recipe.essenceSkyblockId()), recipe.essenceCost()));
+		for (String extraItem : recipe.extraItemIds()) {
+			NEUIngredient ingredient = NEUIngredient.fromString(extraItem);
+			costs.add(new RecipeCostTooltip.Cost(List.of(ingredient.getItemId()), ingredient.getAmount()));
 		}
-		return RecipeFormatting.coins(total) + " coins";
+		return RecipeCostTooltip.lines(
+			"Star upgrade: " + (recipe.starCountAfter() - 1) + " -> " + recipe.starCountAfter(), costs);
 	}
 }

@@ -3,7 +3,22 @@ plugins {
 	id 'java-library'
 }
 
-version = project.mod_version
+def gitOutput = { List<String> arguments ->
+	providers.exec {
+		workingDir = rootDir
+		commandLine(['git'] + arguments)
+		ignoreExitValue = true
+	}.standardOutput.asText.get().trim()
+}
+def gitRevision = file('.git').exists() ? gitOutput(['rev-parse', '--short=7', 'HEAD']) : ''
+def sourceChanges = file('.git').exists() ? gitOutput([
+	'status', '--porcelain', '--untracked-files=all', '--',
+	'src', 'build.gradle', 'gradle.properties', 'settings.gradle', 'gradle'
+]) : ''
+def buildRevision = (gitRevision ?: 'unknown') + (sourceChanges ? '.dirty' : '')
+
+def buildVersion = "${project.mod_version}+${buildRevision}".toString()
+version = buildVersion
 group = project.maven_group
 
 base {
@@ -53,10 +68,10 @@ test {
 }
 
 processResources {
-	inputs.property "version", project.version
+	inputs.property "version", buildVersion
 	filteringCharset = "UTF-8"
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": buildVersion
 	}
 }
 

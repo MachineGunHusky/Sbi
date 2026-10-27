@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "skyblockrecipeviewer",
-  "version": "1.0.3",
+  "version": "${version}",
   "name": "SkyBlock Recipe Viewer",
   "description": "Downloads the public NotEnoughUpdates item repo and shows SkyBlock crafting recipes in REI. No auto-updater, no mod-list reporting.",
   "authors": [],

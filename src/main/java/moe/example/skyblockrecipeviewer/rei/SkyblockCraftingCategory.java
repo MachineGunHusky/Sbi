@@ -7,8 +7,10 @@ import dev.architectury.event.EventResult;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
+import me.shedaniel.rei.api.client.gui.widgets.Tooltip;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
+import me.shedaniel.rei.api.client.gui.widgets.WidgetWithBounds;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.category.visibility.CategoryVisibilityPredicate;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
@@ -83,7 +85,10 @@ public class SkyblockCraftingCategory implements DisplayCategory<SkyblockCraftin
 			}
 		}
 
-		widgets.add(Widgets.createArrow(new Point(origin.x + 60, origin.y + 18)));
+		WidgetWithBounds arrow = Widgets.createArrow(new Point(origin.x + 60, origin.y + 18));
+		widgets.add(arrow);
+		widgets.add(Widgets.createTooltip(mouse -> arrow.getBounds().contains(mouse)
+			? Tooltip.create(mouse, RecipeCostTooltip.lines("Craft cost", display.getCosts())) : null));
 
 		Slot outputSlot = Widgets.createSlot(new Point(origin.x + 96, origin.y + 19));
 		if (!display.getOutputEntries().isEmpty()) {

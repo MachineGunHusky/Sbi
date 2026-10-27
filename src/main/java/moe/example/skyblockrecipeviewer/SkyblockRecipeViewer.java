@@ -1,6 +1,7 @@
 package moe.example.skyblockrecipeviewer;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,8 @@ import moe.example.skyblockrecipeviewer.repo.NeuRepoManager;
  */
 public class SkyblockRecipeViewer implements ClientModInitializer {
 	public static final String MOD_ID = "skyblockrecipeviewer";
+	public static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID)
+		.map(mod -> mod.getMetadata().getVersion().getFriendlyString()).orElse("development");
 	public static final Logger LOGGER = LogManager.getLogger("SkyblockRecipeViewer");
 	private static final long REPO_CHECK_INTERVAL_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
 	private static long nextRepoCheckNanos;
@@ -101,6 +104,6 @@ public class SkyblockRecipeViewer implements ClientModInitializer {
 				});
 		});
 
-		LOGGER.info("SkyBlock Recipe Viewer loaded.");
+		LOGGER.info("SkyBlock Recipe Viewer {} loaded.", VERSION);
 	}
 }

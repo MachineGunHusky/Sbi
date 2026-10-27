@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import moe.example.skyblockrecipeviewer.SkyblockRecipeViewer;
 import moe.example.skyblockrecipeviewer.repo.SkyblockItemRealNbt;
 import moe.example.skyblockrecipeviewer.repo.SkyblockItemRenameManager;
 import moe.example.skyblockrecipeviewer.repo.SkyblockPriceManager;
@@ -24,6 +25,7 @@ import moe.example.skyblockrecipeviewer.repo.SkyblockPriceManager;
  *
  * Commands:
  * <ul>
+ *   <li>{@code /sbi version} - shows the release version and build revision</li>
  *   <li>{@code /sbi rename <name>} - renames the held item (client-side only)</li>
  *   <li>{@code /sbi rename clear} - clears the held item's custom name, restoring its
  *       original name</li>
@@ -40,6 +42,13 @@ public final class SkyblockCommands {
 	public static void register() {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			dispatcher.register(ClientCommands.literal("sbi")
+				.then(ClientCommands.literal("version")
+					.executes(context -> {
+						context.getSource().sendFeedback(Component.literal(
+							"[SkyBlock Recipe Viewer] Version: " + SkyblockRecipeViewer.VERSION)
+							.withStyle(ChatFormatting.GRAY));
+						return 1;
+					}))
 				.then(ClientCommands.literal("rename")
 					.then(ClientCommands.argument("name", StringArgumentType.greedyString())
 						.executes(context -> {

@@ -516,6 +516,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		if (inputs == null) return null;
 
 		List<EntryIngredient> inputEntries = new ArrayList<>(9);
+		List<RecipeCostTooltip.Cost> costs = new ArrayList<>();
 		for (int i = 0; i < 9; i++) {
 			NEUIngredient ingredient = i < inputs.length ? inputs[i] : null;
 			if (SkyblockItemResolver.isEmptySlot(ingredient)) {
@@ -523,6 +524,10 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 				continue;
 			}
 			ItemStack stack = SkyblockItemResolver.resolve(repository, ingredient);
+			ItemStack priceStack = SkyblockItemResolver.resolveItemStack(
+				repository.getItems().getItemBySkyblockId(ingredient.getItemId()), ingredient.getItemId());
+			costs.add(new RecipeCostTooltip.Cost(
+				SkyblockPriceTooltipHandler.priceLookupIds(ingredient.getItemId(), priceStack), ingredient.getAmount()));
 			if (stack.isEmpty()) {
 				inputEntries.add(EntryIngredient.empty());
 			} else {
@@ -540,7 +545,7 @@ public class SkyblockReiPlugin implements REIClientPlugin {
 		}
 		if (outputEntries.isEmpty()) return null;
 
-		return new SkyblockCraftingDisplay(inputEntries, outputEntries);
+		return new SkyblockCraftingDisplay(inputEntries, outputEntries, costs);
 	}
 
 	static SkyblockReforgeDisplay toReforgeDisplay(NEURepository repository,

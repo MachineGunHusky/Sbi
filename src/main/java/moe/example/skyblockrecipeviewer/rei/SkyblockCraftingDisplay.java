@@ -12,6 +12,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
 public class SkyblockCraftingDisplay extends BasicDisplay {
+	private final List<RecipeCostTooltip.Cost> costs;
 
 	// This display is (re)built purely client-side from the downloaded item repo on every
 	// REI plugin reload - it's never saved to disk or sent over the network, so the
@@ -33,8 +34,14 @@ public class SkyblockCraftingDisplay extends BasicDisplay {
 			}),
 		false);
 
-	public SkyblockCraftingDisplay(List<EntryIngredient> inputs, List<EntryIngredient> outputs) {
+	public SkyblockCraftingDisplay(List<EntryIngredient> inputs, List<EntryIngredient> outputs,
+			List<RecipeCostTooltip.Cost> costs) {
 		super(inputs, outputs);
+		this.costs = List.copyOf(costs);
+	}
+
+	List<RecipeCostTooltip.Cost> getCosts() {
+		return costs;
 	}
 
 	@Override
